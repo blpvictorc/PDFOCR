@@ -43,12 +43,12 @@
       <div>
         <h1 class="text-base font-extrabold tracking-tight flex items-center gap-2">
           Document Intelligence Extractor
-          <span class="bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30 mono-font">V1.10</span>
+          <span class="bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30 mono-font">V2.2</span>
         </h1>
         <div class="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 font-medium">
           <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Non-Destructive Grid Removal</span>
           <span>•</span>
-          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Dual-Pass Quantity Check</span>
+          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Table Geometry &amp; Contextual Audit</span>
           <span>•</span>
           <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Zero Server Upload</span>
         </div>
@@ -106,6 +106,11 @@
         <i class="fa-solid fa-file-csv"></i>
         <span>Export (.csv)</span>
       </button>
+
+      <button id="exportStructuredCsvBtn" disabled class="px-3 py-1.5 bg-teal-700 hover:bg-teal-600 disabled:opacity-40 disabled:pointer-events-none text-white text-xs font-bold rounded-lg shadow-md shadow-teal-950/40 flex items-center space-x-1.5 transition cursor-pointer" title="Export structured table columns when table geometry confidence is sufficient">
+        <i class="fa-solid fa-table"></i>
+        <span>Structured CSV</span>
+      </button>
     </div>
   </header>
 
@@ -150,6 +155,23 @@
 
     <!-- Workspace Body -->
     <div class="flex-1 flex flex-col overflow-hidden p-3 gap-2.5">
+
+      <!-- Compact V2.2 Intelligence & Page Quality Strip -->
+      <div id="v22TelemetryBar" class="bg-white border border-slate-200 rounded-xl px-3.5 py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0 text-[11px]">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider">Doc Type:</span>
+          <span id="docTypeBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mono-font text-[10px] font-bold">UNKNOWN (0%)</span>
+          <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider ml-1">Doc Quality:</span>
+          <span id="docQualityBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mono-font text-[10px] font-bold">-</span>
+          <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider ml-1">Table Mode:</span>
+          <span id="tableModeBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 mono-font text-[10px] font-bold">Fallback Ready</span>
+          <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider ml-1">Suspicious Rows:</span>
+          <span id="suspiciousCountBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mono-font text-[10px] font-bold">0</span>
+        </div>
+        <div id="pageQualityStrip" class="flex flex-wrap items-center gap-1.5 text-[10px] mono-font text-slate-500">
+          <span>Page Quality: -</span>
+        </div>
+      </div>
 
       <!-- Compact Drag & Drop Banner -->
       <div id="dropZone" class="bg-white hover:bg-blue-50/60 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-xl px-4 py-2.5 flex items-center justify-between cursor-pointer transition-all shrink-0 shadow-2xs group">
@@ -200,12 +222,32 @@
               Validation Review
               <span id="reviewCountBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 mono-font">0 pending</span>
             </span>
-            <button id="reviewSelectionBtn" disabled class="px-2.5 py-1 bg-white hover:bg-blue-50 disabled:opacity-40 disabled:pointer-events-none border border-slate-300 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition" title="Select any extracted value below, then add it to Validation Review">
-              <i class="fa-solid fa-pen-to-square text-blue-600"></i>
-              Review Selected Value
-            </button>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <label class="flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-semibold text-slate-600 cursor-pointer select-none" title="Also include non-critical REVIEW_REQUIRED / MEDIUM-risk suggestions after confirmation">
+                <input type="checkbox" id="includeReviewFixesToggle" class="accent-amber-600 rounded cursor-pointer">
+                <span>Include review-level suggestions</span>
+              </label>
+              <button id="applyAllSafeBtn" disabled class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white text-[10px] font-bold rounded-lg shadow-2xs flex items-center gap-1 transition cursor-pointer" title="Atomically apply safe high-confidence fixes">
+                <i class="fa-solid fa-check-double"></i>
+                <span>Apply All Safe Fixes</span>
+              </button>
+              <button id="undoBatchBtn" disabled class="px-2.5 py-1 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none border border-slate-300 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-1 transition cursor-pointer" title="Restore complete pre-bulk-apply snapshot">
+                <i class="fa-solid fa-rotate-left text-slate-600"></i>
+                <span>Undo Last Batch</span>
+              </button>
+              <button id="rescanValidationBtn" disabled class="px-2.5 py-1 bg-white hover:bg-amber-50 disabled:opacity-40 disabled:pointer-events-none border border-slate-300 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer" title="Re-run self-consistency &amp; arithmetic validation on current text">
+                <i class="fa-solid fa-stethoscope text-amber-600"></i>
+                Re-Validate
+              </button>
+              <button id="reviewSelectionBtn" disabled class="px-2.5 py-1 bg-white hover:bg-blue-50 disabled:opacity-40 disabled:pointer-events-none border border-slate-300 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer" title="Select any extracted value below, then add it to Validation Review">
+                <i class="fa-solid fa-pen-to-square text-blue-600"></i>
+                Review Selected Value
+              </button>
+            </div>
           </div>
 
+          <div id="bulkPreviewBanner" class="hidden border-b border-blue-200 bg-blue-50/90 px-4 py-2.5 text-[11px] text-slate-800 space-y-2 shrink-0"></div>
+          <div id="batchResultBanner" class="hidden border-b border-emerald-200 bg-emerald-50/70 px-4 py-2 text-[11px] text-slate-800 space-y-1.5 shrink-0"></div>
           <div id="validationReviewPanel" class="hidden max-h-[42%] overflow-auto border-b border-slate-200 bg-slate-50/60 p-3 space-y-2"></div>
 
           <div class="bg-white border-b border-slate-200 px-4 py-1.5 flex items-center justify-between shrink-0">
@@ -249,6 +291,7 @@
     const validationReviewPanel = document.getElementById('validationReviewPanel');
     const reviewCountBadge = document.getElementById('reviewCountBadge');
     const reviewSelectionBtn = document.getElementById('reviewSelectionBtn');
+    const rescanValidationBtn = document.getElementById('rescanValidationBtn');
 
     let currentFileBuffer = null;
     let currentFileName = 'extracted';
@@ -296,7 +339,7 @@
       const pendingCritical = validationIssues.filter(issue => issue.status === 'pending' && issue.severity === 'critical').length;
       if (pendingCritical && !confirm(`${pendingCritical} critical validation item(s) are still pending. Export without applying or ignoring them?`)) return;
       // Manual-first rule: export exactly what the user currently sees and edited.
-      // Extraction-time OCR normalization is never re-applied over manual edits.
+      // V1.7 OCR normalization is applied after extraction, never again over manual edits.
       const reviewedText = outputText.value;
       const lines = reviewedText.split('\n').filter(line => line.trim() !== '');
       const csvContent = lines.map(line => {
@@ -321,6 +364,14 @@
     outputText.addEventListener('keyup', updateReviewSelectionState);
     outputText.addEventListener('mouseup', updateReviewSelectionState);
     reviewSelectionBtn.addEventListener('click', addSelectedValueToReview);
+    rescanValidationBtn.addEventListener('click', () => {
+      detectCriticalFieldIssues(outputText.value);
+      renderValidationReview();
+      const pending = validationIssues.filter(issue => issue.status === 'pending').length;
+      statusText.textContent = pending
+        ? `Validation re-scan complete — ${pending} item(s) flagged for review`
+        : 'Validation re-scan complete — no self-consistency conflicts detected';
+    });
     validationReviewPanel.addEventListener('input', event => {
       const input = event.target.closest('[data-suggestion-id]');
       if (!input) return;
@@ -366,11 +417,13 @@
       renderValidationReview();
       refreshQualityStatus();
       updateCharCount();
+      if (typeof clearPdfHighlightBoxes === 'function') clearPdfHighlightBoxes();
       previewContainer.innerHTML = '';
       modeBadge.classList.add('hidden');
       timeText.textContent = '...';
       copyBtn.disabled = true;
       exportCsvBtn.disabled = true;
+      rescanValidationBtn.disabled = true;
       progressWrap.classList.remove('hidden');
       progressFill.style.width = '5%';
       statusText.textContent = 'Inspecting PDF structure...';
@@ -441,7 +494,10 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           await page.render({ canvasContext: ctx, viewport }).promise;
-          previewContainer.appendChild(canvas);
+          const pageWrap = document.createElement('div');
+          pageWrap.className = 'relative inline-flex justify-center w-full';
+          pageWrap.appendChild(canvas);
+          previewContainer.appendChild(pageWrap);
 
           if (useOCR) {
             const ocrCanvas = document.createElement('canvas');
@@ -487,6 +543,7 @@
         progressFill.style.width = '100%';
         copyBtn.disabled = false;
         exportCsvBtn.disabled = false;
+        rescanValidationBtn.disabled = false;
 
       } catch (err) {
         console.error(err);
@@ -665,20 +722,41 @@
       return detected;
     }
 
+    function isPoItemDescriptionRow(line) {
+      // Only match PO item rows that contain a shipment date (DD/MMM/YY); standalone wrapped description lines like "PLUSH" are not item code rows
+      if (/\b\d{7}-\d{5}-\d\b/.test(line) || /#\s*U[0-9A-Z]{7}-/i.test(line) || /ITEM\s*NO\./i.test(line) || /\([0-9A-Z]{7}\)/i.test(line)) return false;
+      if (/^(?:=== Page|PAGE:|Messrs|Ship To|PO No|Date|Incoterms|Payment|Shipping|Shipment|To\s*:|Factory|Necessary|Item\b|Total Amount|Remark|Seller|Buyer)/i.test(line.trim())) return false;
+      return /\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i.test(line);
+    }
     function detectJanGroupedItemConflicts(lines, offsets) {
       const candidates = [];
-      const itemPattern = /\b\d{7}\b/g;
       lines.forEach((line, lineIndex) => {
-        // Exclude JAN itself and package-list redundant formats handled block-locally.
-        if (/\b\d{7}-\d{5}-\d\b/.test(line) || /#\s*U[0-9A-Z]{7}-/i.test(line) || /ITEM\s*NO\./i.test(line) || /\([0-9A-Z]{7}\)/i.test(line)) return;
+        if (!isPoItemDescriptionRow(line)) return;
         const jan = nearbyJanCode(lines, lineIndex);
-        if (!jan) return; // Never fall back to page-wide frequency.
-        let match;
-        while ((match = itemPattern.exec(line)) !== null) {
+        if (!jan) return;
+
+        // First token on the PO row: either a 7-digit item code or a garbled short alphanumeric token (e.g. "gh", "wf")
+        const firstTokenMatch = line.match(/^\s*([^\s\t]+)/);
+        if (!firstTokenMatch) return;
+        const token = firstTokenMatch[1];
+        const col = line.indexOf(token);
+
+        if (/^\d{7}$/.test(token)) {
           candidates.push({
-            value: match[0],
+            value: token,
+            isNumeric7: true,
             lineNumber: lineIndex,
-            column: match.index,
+            column: col,
+            page: currentPageForLine(lines, lineIndex),
+            jan,
+            line
+          });
+        } else if (/^[A-Za-z0-9]{1,6}$/.test(token) && !/^(?:CTN|PCS|SET|BOX|PKG|JAN)$/i.test(token)) {
+          candidates.push({
+            value: token,
+            isNumeric7: false,
+            lineNumber: lineIndex,
+            column: col,
             page: currentPageForLine(lines, lineIndex),
             jan,
             line
@@ -694,30 +772,292 @@
 
       const detected = [];
       for (const [jan, group] of groups.entries()) {
+        const numericOnes = group.filter(c => c.isNumeric7);
+        if (!numericOnes.length) continue;
+
         const counts = new Map();
-        for (const candidate of group) counts.set(candidate.value, (counts.get(candidate.value) || 0) + 1);
+        for (const candidate of numericOnes) counts.set(candidate.value, (counts.get(candidate.value) || 0) + 1);
         const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-        if (!ranked.length || ranked[0][1] < 2) continue;
         const [consensus, support] = ranked[0];
+
         for (const candidate of group) {
-          if (candidate.value === consensus || !plausibleOcrConfusion(candidate.value, consensus)) continue;
-          detected.push({
-            type: 'Item Code',
-            severity: 'critical',
-            original: candidate.value,
-            suggested: consensus,
-            confidence: 96,
-            reason: `${support} rows carrying the same JAN ${jan} agree on ${consensus}; this row differs by one plausible OCR-confusion digit.`,
-            lineNumber: candidate.lineNumber,
-            column: candidate.column,
-            page: candidate.page,
-            context: candidate.line,
-            source: 'Same JAN / repeated PO row evidence',
-            issueKey: `item-jan|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${consensus}`
-          });
+          if (candidate.value === consensus) continue;
+          if (!candidate.isNumeric7) {
+            // Garbled short token (like "gh" or "wf") on a row sharing the exact same JAN code
+            detected.push({
+              type: 'Garbled Item Code',
+              severity: 'critical',
+              original: candidate.value,
+              suggested: consensus,
+              confidence: support >= 2 ? 98 : 94,
+              reason: `Row shares JAN ${jan} with ${support} row(s) having Item Code ${consensus}, but faint ink caused OCR to read "${candidate.value}".`,
+              lineNumber: candidate.lineNumber,
+              column: candidate.column,
+              page: candidate.page,
+              context: candidate.line,
+              source: 'Same JAN self-consistency recovery',
+              issueKey: `item-jan-garbled|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${consensus}`
+            });
+          } else if (support >= 2 && plausibleOcrConfusion(candidate.value, consensus)) {
+            detected.push({
+              type: 'Item Code',
+              severity: 'critical',
+              original: candidate.value,
+              suggested: consensus,
+              confidence: 96,
+              reason: `${support} rows carrying the same JAN ${jan} agree on ${consensus}; this row differs by one plausible OCR-confusion digit.`,
+              lineNumber: candidate.lineNumber,
+              column: candidate.column,
+              page: candidate.page,
+              context: candidate.line,
+              source: 'Same JAN / repeated PO row evidence',
+              issueKey: `item-jan|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${consensus}`
+            });
+          }
         }
       }
       return detected;
+    }
+
+    function parseNumericClean(str) {
+      if (!str) return NaN;
+      const cleaned = String(str).replace(/\s+/g, '').replace(/,/g, '');
+      if (!/^\d+(?:\.\d+)?$/.test(cleaned)) return NaN;
+      return Number(cleaned);
+    }
+
+    function formatIntegerWithCommas(num) {
+      return Math.round(num).toLocaleString('en-US');
+    }
+
+    function detectPoArithmeticIssues(lines) {
+      const issues = [];
+      let rowSum = 0;
+      let countedRows = 0;
+
+      lines.forEach((line, lineIndex) => {
+        if (!/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i.test(line)) return;
+        const page = currentPageForLine(lines, lineIndex);
+        const nextLine1 = lines[lineIndex + 1] || '';
+        const nextLine2 = lines[lineIndex + 2] || '';
+        const blockText = `${line} ${nextLine1} ${nextLine2}`;
+
+        // Match pattern: <qty> <date> <unitPrice> <amount> ...
+        const dateMatch = line.match(/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i);
+        const afterDate = dateMatch ? line.slice(dateMatch.index + dateMatch[0].length) : '';
+        const searchFrom = dateMatch ? dateMatch.index + dateMatch[0].length : 0;
+
+        // Unit price usually has decimals like 636.00 or 495.00
+        const priceMatch = afterDate.match(/\b\d{1,5}(?:\.\d{1,2})\b/);
+        if (!priceMatch) return;
+        const unitPrice = parseNumericClean(priceMatch[0]);
+        if (Number.isNaN(unitPrice)) return;
+
+        // Amount usually has comma-grouped thousands (e.g. 18,988,416) or 4+ digits after unit price
+        const afterPrice = afterDate.slice(priceMatch.index + priceMatch[0].length);
+        const amtMatch = afterPrice.match(/(\d{1,3}(?:,\s*\d{3})+)/) || afterPrice.match(/\b(\d{4,7})\b/);
+        if (!amtMatch) return;
+        const amountObj = {
+          raw: amtMatch[1].trim(),
+          val: parseNumericClean(amtMatch[1]),
+          idx: line.indexOf(amtMatch[1].trim(), searchFrom + priceMatch.index + priceMatch[0].length)
+        };
+        if (Number.isNaN(amountObj.val)) return;
+        const amount = amountObj.val;
+
+        // Extract total PCS from remarks e.g. "(6144.00 PCS)" or from PCS unit row
+        const remarkPcsMatch = blockText.match(/\((\d+(?:\.\d+)?)\s*PCS\)/i);
+        const pcsPerCtnMatch = blockText.match(/\b(\d+)\s*P\/C\b/i);
+        const preDate = line.split(/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i)[0] || '';
+        const preNums = [...preDate.matchAll(/\b\d{1,5}\b/g)].map(m => Number(m[0]));
+
+        let expectedPcs = null;
+        if (remarkPcsMatch) {
+          expectedPcs = Number(remarkPcsMatch[1]);
+        } else if (/\bPCS\b/i.test(blockText) && preNums.length) {
+          expectedPcs = preNums[preNums.length - 1];
+        } else if (pcsPerCtnMatch && preNums.length) {
+          expectedPcs = preNums[preNums.length - 1] * Number(pcsPerCtnMatch[1]);
+        }
+
+        if (expectedPcs !== null && unitPrice > 0) {
+          const expectedAmount = Math.round(expectedPcs * unitPrice);
+          rowSum += expectedAmount;
+          countedRows += 1;
+
+          if (Math.abs(expectedAmount - amount) >= 1) {
+            const formattedExpected = formatIntegerWithCommas(expectedAmount);
+            issues.push({
+              type: 'PO Amount Math Check',
+              severity: 'critical',
+              original: amountObj.raw,
+              suggested: formattedExpected,
+              confidence: 97,
+              reason: `Expected ${expectedPcs.toLocaleString()} PCS × ${unitPrice.toFixed(2)} = ${formattedExpected}, but OCR extracted ${amountObj.raw}.`,
+              lineNumber: lineIndex,
+              column: amountObj.idx,
+              page,
+              context: line,
+              source: 'Arithmetic conservation (PCS × Unit Price)',
+              issueKey: `po-math|${page}|${lineIndex}|${amountObj.raw}|${formattedExpected}`
+            });
+          }
+        }
+      });
+
+      // Check Total Amount line against sum of rows
+      if (countedRows >= 1 && rowSum > 0) {
+        lines.forEach((line, lineIndex) => {
+          if (!/Total\s*Amount/i.test(line)) return;
+          const m = line.match(/(\d{1,3}(?:[,\s]\d{3})+)/);
+          if (!m) return;
+          const docTotal = parseNumericClean(m[1]);
+          if (!Number.isNaN(docTotal) && Math.abs(docTotal - rowSum) >= 1) {
+            const formattedSum = formatIntegerWithCommas(rowSum);
+            issues.push({
+              type: 'PO Total Amount Mismatch',
+              severity: 'critical',
+              original: m[1],
+              suggested: formattedSum,
+              confidence: 95,
+              reason: `Sum of line items equals ${formattedSum}, which differs from Total Amount ${m[1]}.`,
+              lineNumber: lineIndex,
+              column: line.indexOf(m[1]),
+              page: currentPageForLine(lines, lineIndex),
+              context: line,
+              source: 'Document total cross-check',
+              issueKey: `po-total|${lineIndex}|${m[1]}|${formattedSum}`
+            });
+          }
+        });
+      }
+
+      return issues;
+    }
+
+    function detectPackingSelfConsistencyIssues(lines) {
+      const issues = [];
+
+      lines.forEach((line, lineIndex) => {
+        const page = currentPageForLine(lines, lineIndex);
+        const nextLine = lines[lineIndex + 1] || '';
+
+        // 1. Check Carton * pcs_per_ctn == total_pcs (e.g., "125	3,000PCS" + next line "24 pcs per ctn.")
+        const ctnQtyMatch = line.match(/^\s*(\d{1,3}(?:,\d{3})*)\t(\d{1,3}(?:,\d{3})*)\s*PCS\b/i);
+        const perCtnMatch = nextLine.match(/\b(\d+)\s*pcs\s*per\s*ctn/i);
+        if (ctnQtyMatch && perCtnMatch) {
+          const ctns = parseNumericClean(ctnQtyMatch[1]);
+          const pcs = parseNumericClean(ctnQtyMatch[2]);
+          const perCtn = Number(perCtnMatch[1]);
+          if (ctns * perCtn !== pcs) {
+            const expectedPcs = formatIntegerWithCommas(ctns * perCtn);
+            issues.push({
+              type: 'Packing Qty Math Check',
+              severity: 'critical',
+              original: ctnQtyMatch[2],
+              suggested: expectedPcs,
+              confidence: 96,
+              reason: `${ctns.toLocaleString()} CTN × ${perCtn} pcs/ctn = ${expectedPcs} PCS, but OCR extracted ${ctnQtyMatch[2]}.`,
+              lineNumber: lineIndex,
+              column: line.indexOf(ctnQtyMatch[2]),
+              page,
+              context: line,
+              source: 'Packing List arithmetic check',
+              issueKey: `pl-math|${page}|${lineIndex}|${ctnQtyMatch[2]}|${expectedPcs}`
+            });
+          }
+        }
+
+        // 2. Check missing decimal point in KG weights on packing rows (e.g., "740KG" -> "7.40KG", "1410KG" -> "14.10KG")
+        const kgMatches = [...line.matchAll(/\b(\d{3,4})KG\b/gi)];
+        for (const km of kgMatches) {
+          const rawDigits = km[1];
+          const numVal = Number(rawDigits);
+          // Per-carton weights in these packing lists are typically 1.00KG–40.00KG; 3-4 digits without decimal are 100x scaled
+          if (numVal >= 100 && numVal <= 4999) {
+            const suggestedKg = (numVal / 100).toFixed(2) + 'KG';
+            issues.push({
+              type: 'Missing Decimal in Weight',
+              severity: 'critical',
+              original: km[0],
+              suggested: suggestedKg,
+              confidence: 95,
+              reason: `Per-carton weight "${km[0]}" appears missing its decimal point (100x scale anomaly).`,
+              lineNumber: lineIndex,
+              column: km.index,
+              page,
+              context: line,
+              source: 'Unit scale & decimal sanity check',
+              issueKey: `kg-dec|${page}|${lineIndex}|${km.index}|${km[0]}|${suggestedKg}`
+            });
+          }
+        }
+
+        // 3. Check missing decimal point in CM dimensions (e.g., "52.0 X51.0X 345 CM" -> "34.5")
+        const dimMatch = line.match(/(\d{2}\.\d)\s*[Xx]\s*(\d{2}\.\d)\s*[Xx]\s*(\d{3})\s*CM\b/i);
+        if (dimMatch) {
+          const thirdRaw = dimMatch[3];
+          const suggestedDim = (Number(thirdRaw) / 10).toFixed(1);
+          const col = line.indexOf(thirdRaw, dimMatch.index);
+          issues.push({
+            type: 'Missing Decimal in Dimension',
+            severity: 'review',
+            original: thirdRaw,
+            suggested: suggestedDim,
+            confidence: 93,
+            reason: `Carton measurement "${dimMatch[0]}" has two 1-decimal dimensions and a 3-digit integer "${thirdRaw}" (likely ${suggestedDim} cm).`,
+            lineNumber: lineIndex,
+            column: col,
+            page,
+            context: line,
+            source: 'Dimension format consistency check',
+            issueKey: `dim-dec|${page}|${lineIndex}|${col}|${thirdRaw}|${suggestedDim}`
+          });
+        }
+
+        // 4. Check merged dual decimal weights like "15,636.7822.541.19" or "1.032,00.1.504.00"
+        const mergedWeightMatch = line.match(/(\d{1,3}(?:[,.]\d{3})*\.\d{2})(\d{1,3}(?:[,.]\d{3})*\.\d{2})/);
+        if (mergedWeightMatch) {
+          const left = mergedWeightMatch[1].replace(/(\d)\.(\d{3}\.)/, '$1,$2');
+          const right = mergedWeightMatch[2].replace(/(\d)\.(\d{3}\.)/, '$1,$2');
+          const suggestedSplit = `${left}	${right}`;
+          issues.push({
+            type: 'Merged Weight Columns',
+            severity: 'critical',
+            original: mergedWeightMatch[0],
+            suggested: suggestedSplit,
+            confidence: 96,
+            reason: `Net Weight and Gross Weight merged into "${mergedWeightMatch[0]}" without column separator.`,
+            lineNumber: lineIndex,
+            column: mergedWeightMatch.index,
+            page,
+            context: line,
+            source: 'Dual-decimal column boundary check',
+            issueKey: `merged-wt|${page}|${lineIndex}|${mergedWeightMatch[0]}`
+          });
+        }
+
+        // 5. Check digit-confused "8 SAMPLE" -> "B SAMPLE"
+        const sampleMatch = line.match(/\b8\s+SAMPLE\b/i);
+        if (sampleMatch) {
+          issues.push({
+            type: 'Sample Label OCR Confusion',
+            severity: 'review',
+            original: sampleMatch[0],
+            suggested: 'B SAMPLE',
+            confidence: 91,
+            reason: `"${sampleMatch[0]}" is a common OCR digit/letter confusion for "B SAMPLE".`,
+            lineNumber: lineIndex,
+            column: sampleMatch.index,
+            page,
+            context: line,
+            source: 'Domain phrase pattern check',
+            issueKey: `sample-b|${page}|${lineIndex}|${sampleMatch.index}`
+          });
+        }
+      });
+
+      return issues;
     }
 
     function detectItemCodeConflicts(text) {
@@ -735,98 +1075,17 @@
       return [...unique.values()];
     }
 
-    function detectWeightAndMeasurementIssues(text) {
-      const lines = text.split('\n');
-      const detected = [];
-
-      lines.forEach((line, lineNumber) => {
-        const page = currentPageForLine(lines, lineNumber);
-
-        // Gross Weight regression lock: a collapsed decimal such as 740KG or
-        // 1410KG is only suggested when a plausible decimal Net Weight appears
-        // in the same row. This avoids changing legitimate 740 KG shipments.
-        const decimalWeights = [...line.matchAll(/\b(\d{1,2}(?:\.\d{1,2}))\s*KG\b/gi)]
-          .map(match => Number(match[1]))
-          .filter(Number.isFinite);
-        const collapsedWeightPattern = /\b(\d{3,4})\s*KG\b/gi;
-        let weightMatch;
-        while ((weightMatch = collapsedWeightPattern.exec(line)) !== null) {
-          const digits = weightMatch[1];
-          const candidateText = `${digits.slice(0, -2)}.${digits.slice(-2)}`;
-          const candidate = Number(candidateText);
-          const netWeight = decimalWeights
-            .filter(value => value <= candidate)
-            .sort((left, right) => right - left)[0];
-          const plausiblePair = Number.isFinite(netWeight)
-            && candidate >= 2
-            && candidate <= 100
-            && candidate >= netWeight
-            && candidate - netWeight <= Math.max(5, netWeight * 0.45);
-          if (!plausiblePair) continue;
-
-          detected.push({
-            type: 'Gross Weight',
-            severity: 'critical',
-            original: weightMatch[0],
-            suggested: `${candidateText}KG`,
-            confidence: 97,
-            reason: `Gross Weight ${weightMatch[0]} is inconsistent with Net Weight ${netWeight}KG; the decimal is likely missing.`,
-            lineNumber,
-            column: weightMatch.index,
-            page,
-            context: line,
-            source: 'Same-row Net/Gross Weight validation',
-            issueKey: `weight-decimal|${page}|${lineNumber}|${weightMatch.index}|${weightMatch[0]}|${candidateText}KG`
-          });
-        }
-
-        // Measurement regression lock: require a complete three-axis carton
-        // dimension before restoring a missing decimal in the third axis.
-        const measurementPattern = /\b(\d{1,3}(?:\.\d+)?)\s*[x×]\s*(\d{1,3}(?:\.\d+)?)\s*[x×]\s*(\d{3})\s*(CM)\b/gi;
-        let measurementMatch;
-        while ((measurementMatch = measurementPattern.exec(line)) !== null) {
-          const first = Number(measurementMatch[1]);
-          const second = Number(measurementMatch[2]);
-          const digits = measurementMatch[3];
-          const candidateText = `${digits.slice(0, -1)}.${digits.slice(-1)}`;
-          const candidate = Number(candidateText);
-          const plausibleCarton = [first, second, candidate].every(value => Number.isFinite(value) && value >= 5 && value <= 200);
-          if (!plausibleCarton) continue;
-
-          const originalStartInMatch = measurementMatch[0].lastIndexOf(digits);
-          const column = measurementMatch.index + originalStartInMatch;
-          const original = line.slice(column, measurementMatch.index + measurementMatch[0].length);
-          const spacing = /\s+CM$/i.test(original) ? ' ' : '';
-          const suggested = `${candidateText}${spacing}CM`;
-          detected.push({
-            type: 'Measurement',
-            severity: 'critical',
-            original,
-            suggested,
-            confidence: 96,
-            reason: `The third carton dimension ${original} is inconsistent with the decimal scale of ${measurementMatch[1]} × ${measurementMatch[2]}; the decimal is likely missing.`,
-            lineNumber,
-            column,
-            page,
-            context: line,
-            source: 'Three-axis Measurement validation',
-            issueKey: `measurement-decimal|${page}|${lineNumber}|${column}|${original}|${suggested}`
-          });
-        }
-      });
-
-      return detected;
-    }
-
     function detectCriticalFieldIssues(text) {
       // Keep manual items; rebuild automatic suggestions from current text once.
       validationIssues = validationIssues.filter(issue => issue.source === 'Manual selection');
-      const seen = new Set(validationIssues.map(issueFingerprint));
-      const automaticIssues = [
+      const lines = text.split('\n');
+      const allAutoIssues = [
         ...detectItemCodeConflicts(text),
-        ...detectWeightAndMeasurementIssues(text)
+        ...detectPoArithmeticIssues(lines),
+        ...detectPackingSelfConsistencyIssues(lines)
       ];
-      for (const issue of automaticIssues) {
+      const seen = new Set(validationIssues.map(issueFingerprint));
+      for (const issue of allAutoIssues) {
         const key = issueFingerprint(issue);
         if (seen.has(key)) continue;
         if (addValidationIssue(issue)) seen.add(key);
@@ -981,9 +1240,138 @@
       renderValidationReview();
     }
 
+    function clearPdfHighlightBoxes() {
+      previewContainer.querySelectorAll('.v22-locate-highlight').forEach(el => el.remove());
+    }
+
+    function highlightPdfRegionForIssue(issue) {
+      clearPdfHighlightBoxes();
+      if (!issue) return;
+      const pageNum = Number(issue.page || 1);
+      const canvases = previewContainer.querySelectorAll('canvas');
+      if (!canvases.length) return;
+
+      const targetCanvas = canvases[Math.max(0, Math.min(canvases.length - 1, pageNum - 1))];
+      const wrapper = targetCanvas.parentElement;
+      if (!wrapper) return;
+
+      if (getComputedStyle(wrapper).position === 'static') {
+        wrapper.style.position = 'relative';
+      }
+
+      const canvasRect = targetCanvas.getBoundingClientRect();
+      const dispW = canvasRect.width || targetCanvas.clientWidth || targetCanvas.width;
+      const dispH = canvasRect.height || targetCanvas.clientHeight || targetCanvas.height;
+      const offsetLeft = targetCanvas.offsetLeft;
+      const offsetTop = targetCanvas.offsetTop;
+
+      // Default small fallback box near left table column if exact word bbox is unavailable
+      let boxLeft = offsetLeft + dispW * 0.02;
+      let boxTop = offsetTop + dispH * 0.45;
+      let boxW = dispW * 0.12;
+      let boxH = Math.max(18, dispH * 0.024);
+
+      const art = (typeof v22State !== 'undefined' && Array.isArray(v22State.pageArtifacts))
+        ? v22State.pageArtifacts.find(a => a.page === pageNum)
+        : null;
+
+      const needle = String(issue.originalValue ?? issue.original ?? '').trim().toLowerCase();
+      if (art && art.ocrData && art.width && art.height && needle) {
+        const words = collectOcrWords(art.ocrData);
+        const tokens = needle.split(/\s+/).filter(Boolean);
+
+        // Score each candidate word so we pick the tightest specific match rather than broad substring matches
+        const scoredWords = words
+          .filter(w => w && w.bbox && (w.text || '').trim())
+          .map(w => {
+            const wt = w.text.trim().toLowerCase();
+            let score = 0;
+            if (wt === needle) score = 100;
+            else if (tokens.includes(wt) && wt.length >= 2) score = 80;
+            else if (needle.length >= 4 && wt.includes(needle)) score = 65;
+            else if (wt.length >= 5 && needle.includes(wt)) score = 50;
+            return { w, score };
+          })
+          .filter(x => x.score > 0);
+
+        if (scoredWords.length) {
+          // If there is an exact/high-score match (e.g. 7-digit item code), keep only the top tier and filter out huge spans
+          const maxScore = Math.max(...scoredWords.map(x => x.score));
+          const tightMatches = scoredWords
+            .filter(x => x.score >= maxScore - 15)
+            .map(x => x.w)
+            .filter(w => {
+              const ww = w.bbox.x1 - w.bbox.x0;
+              const wh = w.bbox.y1 - w.bbox.y0;
+              return ww < art.width * 0.35 && wh < art.height * 0.08;
+            });
+
+          const chosen = tightMatches.length ? tightMatches : [scoredWords.sort((a, b) => b.score - a.score)[0].w];
+
+          // Pick the match closest to expected vertical proportion from lineNumber if multiple exist
+          const totalLines = Math.max(1, outputText.value.split('\n').length);
+          const expectedYRatio = Math.min(0.95, Math.max(0.05, ((issue.lineNumber || 0) + 1) / totalLines));
+          const bestWord = [...chosen].sort((a, b) => {
+            const ay = ((a.bbox.y0 + a.bbox.y1) / 2) / art.height;
+            const by = ((b.bbox.y0 + b.bbox.y1) / 2) / art.height;
+            return Math.abs(ay - expectedYRatio) - Math.abs(by - expectedYRatio);
+          })[0];
+
+          const minX0 = bestWord.bbox.x0;
+          const minY0 = bestWord.bbox.y0;
+          const maxX1 = bestWord.bbox.x1;
+          const maxY1 = bestWord.bbox.y1;
+          const padX = Math.max(3, Math.min(10, (maxX1 - minX0) * 0.12));
+          const padY = Math.max(2, Math.min(6, (maxY1 - minY0) * 0.18));
+
+          boxLeft = offsetLeft + ((minX0 - padX) / art.width) * dispW;
+          boxTop = offsetTop + ((minY0 - padY) / art.height) * dispH;
+          boxW = Math.max(18, (((maxX1 - minX0) + padX * 2) / art.width) * dispW);
+          boxH = Math.max(14, (((maxY1 - minY0) + padY * 2) / art.height) * dispH);
+        }
+      }
+
+      const box = document.createElement('div');
+      box.className = 'v22-locate-highlight';
+      box.style.cssText = [
+        'position:absolute',
+        `left:${Math.max(0, boxLeft)}px`,
+        `top:${Math.max(0, boxTop)}px`,
+        `width:${Math.max(18, boxW)}px`,
+        `height:${Math.max(14, boxH)}px`,
+        'border:2.5px solid #f43f5e',
+        'background:rgba(251, 191, 36, 0.28)',
+        'box-shadow:0 0 0 2px rgba(244, 63, 94, 0.25), 0 3px 10px rgba(0,0,0,0.22)',
+        'border-radius:4px',
+        'pointer-events:none',
+        'z-index:20',
+        'transition:opacity 0.2s ease'
+      ].join(';');
+
+      const tag = document.createElement('span');
+      tag.textContent = `P${pageNum} · L${(issue.lineNumber || 0) + 1}`;
+      tag.style.cssText = [
+        'position:absolute',
+        'top:-18px',
+        'left:0',
+        'background:#e11d48',
+        'color:#fff',
+        'font-size:9px',
+        'font-weight:700',
+        'padding:1px 5px',
+        'border-radius:3px',
+        'white-space:nowrap',
+        'font-family:JetBrains Mono,monospace'
+      ].join(';');
+      box.appendChild(tag);
+
+      wrapper.appendChild(box);
+      box.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    }
     function locateValidationIssue(issueId) {
       const issue = validationIssues.find(item => item.id === issueId);
       if (!issue) return;
+      highlightPdfRegionForIssue(issue);
       const range = findIssueRange(issue);
       if (!range) return;
       outputText.focus();
@@ -1370,7 +1758,7 @@
       }).join('\n');
     }
 
-    // Logistics-specific post-processing cleanup
+    // Logistics-specific post-processing cleanup (safe deterministic fixes only)
     function postProcessLogisticsText(text) {
       const cleaned = text
         // Fix '0CT' or '0C1' -> 'OCT' in DD/MMM/YY dates
@@ -1379,6 +1767,9 @@
         .replace(/\bT\.([0O]{2,3}KG\b)/gi, '7.00KG')
         // Fix '7T40KG' -> '7.40KG'
         .replace(/\b(\d)T(\d{2}KG\b)/gi, '$1.$2')
+        // Fix common uppercase word OCR confusions
+        .replace(/\bPIANT\b/g, 'PLANT')
+        .replace(/\b[ITL]?CHIBANKU[JI1T]{1,2}\b/g, 'ICHIBANKUJI')
         // Remove stray spaces inside decimal numbers & thousand commas
         .replace(/(\d+)\.\s+(\d{2,3}\b)/g, '$1.$2')
         .replace(/(\d+),\s+(\d{3}\b)/g, '$1,$2');
@@ -1389,6 +1780,1373 @@
       // Final safety net used both after OCR and immediately before CSV export.
       return normalizeLikelyQuantityLines(normalizeProtectedUnits(text));
     }
+
+    // =========================================================================
+    // V2.2 EXTENSIONS: TABLE GEOMETRY ENGINE, TARGETED CELL RE-OCR & BULK APPLY
+    // =========================================================================
+
+    const includeReviewFixesToggle = document.getElementById('includeReviewFixesToggle');
+    const applyAllSafeBtn = document.getElementById('applyAllSafeBtn');
+    const undoBatchBtn = document.getElementById('undoBatchBtn');
+    const bulkPreviewBanner = document.getElementById('bulkPreviewBanner');
+    const batchResultBanner = document.getElementById('batchResultBanner');
+
+    let bulkBatchSnapshot = null;
+    let lastBatchReport = null;
+    let activeBatchFilter = 'ALL';
+    const targetedOcrSessionCache = new Map();
+
+    function isIdentityLockedAtLine(lineNumber, originalValue) {
+      const recs = v22State.logicalRecords || [];
+      for (const rec of recs) {
+        if (!rec.identityLocked) continue;
+        if (lineNumber >= rec.startLine && lineNumber <= rec.endLine) {
+          const core = extractNumericCore(originalValue);
+          if (core && core === rec.resolvedItemCore) return true;
+          if (/P\.?\s*O\.?\s*NO\.?/i.test(rec.poNumber.rawValue) && originalValue === rec.poNumber.finalValue) return true;
+        }
+      }
+      return false;
+    }
+
+    function enrichValidationIssuesMetadata() {
+      const currentText = outputText.value;
+      for (const issue of validationIssues) {
+        if (!issue.originalValue) issue.originalValue = issue.original || '';
+        if (!issue.suggestedValue) issue.suggestedValue = issue.suggested ?? issue.originalValue;
+        if (!issue.rowId) issue.rowId = `page${issue.page || 1}-line${(issue.lineNumber ?? 0) + 1}`;
+        if (!issue.fieldType) {
+          const t = String(issue.type || '').toUpperCase();
+          if (t.includes('ITEM') || t.includes('IDENTITY')) issue.fieldType = 'ITEM_CODE';
+          else if (t.includes('PO')) issue.fieldType = 'PO_NO';
+          else if (t.includes('QTY') || t.includes('QUANTITY')) issue.fieldType = 'QUANTITY';
+          else if (t.includes('WEIGHT') || t.includes('KG')) issue.fieldType = 'WEIGHT';
+          else if (t.includes('DIMENSION') || t.includes('CM')) issue.fieldType = 'MEASUREMENT';
+          else if (t.includes('PHRASE') || t.includes('DESCRIPTION')) issue.fieldType = 'DESCRIPTION';
+          else if (t.includes('UNIT')) issue.fieldType = 'SAFE_UNIT';
+          else issue.fieldType = 'FIELD';
+        }
+        if (!issue.correctionLevel) {
+          if (issue.type === 'Identity / Record Conflict') issue.correctionLevel = 'CONFLICT';
+          else if (issue.fieldType === 'SAFE_UNIT' && issue.suggestedValue === 'CTN') issue.correctionLevel = 'SAFE_NORMALIZATION';
+          else if ((issue.confidence || 0) >= 95 && issue.severity === 'critical' && !['ITEM_CODE', 'PO_NO', 'PACKAGE_NO', 'ITEM_NO'].includes(issue.fieldType)) {
+            issue.correctionLevel = 'HIGH_CONFIDENCE';
+          } else {
+            issue.correctionLevel = 'REVIEW_REQUIRED';
+          }
+        }
+        if (!issue.riskLevel) {
+          if (issue.correctionLevel === 'CONFLICT' || issue.type === 'Identity / Record Conflict') issue.riskLevel = 'CRITICAL';
+          else if (issue.severity === 'critical' && (issue.confidence || 0) >= 95) issue.riskLevel = 'LOW';
+          else if (issue.severity === 'critical') issue.riskLevel = 'MEDIUM';
+          else issue.riskLevel = 'MEDIUM';
+        }
+        if (!issue.evidence) {
+          issue.evidence = [issue.reason || '', issue.source || ''].filter(Boolean);
+        }
+        if (issue.status === 'pending') {
+          const rng = findIssueRange(issue);
+          issue._isStale = !rng;
+          issue._isAmbiguous = false;
+          if (!rng) {
+            issue._staleReason = 'Target text changed or is no longer uniquely located in current output';
+          } else {
+            const matches = [...currentText.matchAll(new RegExp(escapeRegExpLiteral(issue.originalValue), 'g'))];
+            if (matches.length > 1 && !issue.lineNumber) {
+              issue._isAmbiguous = true;
+              issue._staleReason = 'Multiple matching occurrences without unique row/line anchor';
+            }
+          }
+        }
+      }
+      updateBulkToolbarState();
+    }
+
+    function escapeRegExpLiteral(str) {
+      return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function isIssueSafeForBulkApply(issue, includeReviewLevel = false) {
+      if (!issue || issue.status !== 'pending') return { eligible: false, reason: 'Not pending' };
+      if (issue._isStale || !findIssueRange(issue)) return { eligible: false, reason: 'Stale or missing target' };
+      const orig = String(issue.originalValue ?? issue.original ?? '');
+      const sugg = String(issue.suggestedValue ?? issue.suggested ?? '').trim();
+      if (!sugg || sugg === orig) return { eligible: false, reason: 'No change needed' };
+      const tier = (issue.correctionLevel === 'SAFE_NORMALIZATION' || issue.correctionLevel === 'HIGH_CONFIDENCE') ? 'SAFE' : 'REVIEW';
+      return { eligible: true, tier };
+    }
+    function getEligibleBulkSuggestions(includeReviewLevel = false) {
+      enrichValidationIssuesMetadata();
+      const pending = validationIssues.filter(i => i.status === 'pending');
+      const eligible = [];
+      const excluded = [];
+
+      // Deduplicate overlapping line/range edits by keeping highest confidence first
+      const sortedPending = [...pending].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0));
+      const claimedRanges = [];
+
+      for (const issue of sortedPending) {
+        const check = isIssueSafeForBulkApply(issue, includeReviewLevel);
+        if (!check.eligible) {
+          excluded.push({ issue, reason: check.reason });
+          continue;
+        }
+        const rng = findIssueRange(issue);
+        if (!rng) {
+          excluded.push({ issue, reason: 'Target range not found' });
+          continue;
+        }
+        const overlaps = claimedRanges.some(r => Math.max(r.start, rng.start) < Math.min(r.end, rng.end));
+        if (overlaps) {
+          excluded.push({ issue, reason: 'Overlapping edit range excluded to prevent conflict' });
+          continue;
+        }
+        claimedRanges.push(rng);
+        eligible.push({ issue, tier: check.tier, range: rng });
+      }
+
+      return { eligible, excluded, totalPending: pending.length };
+    }
+
+    function updateBulkToolbarState() {
+      const hasPending = validationIssues.some(i => i.status === 'pending');
+      applyAllSafeBtn.disabled = !hasPending;
+      undoBatchBtn.disabled = !bulkBatchSnapshot;
+    }
+
+    function showBulkPreviewSummary() {
+      const includeReview = Boolean(includeReviewFixesToggle.checked);
+      const { eligible, excluded } = getEligibleBulkSuggestions(includeReview);
+
+      if (!eligible.length) {
+        bulkPreviewBanner.classList.remove('hidden');
+        bulkPreviewBanner.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-slate-700">No safe pending fixes are available${includeReview ? ' for the selected criteria' : ''}.</span>
+            <button type="button" id="closeBulkPreviewBtn" class="px-2 py-0.5 rounded bg-white border border-slate-300 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Close</button>
+          </div>`;
+        document.getElementById('closeBulkPreviewBtn')?.addEventListener('click', () => bulkPreviewBanner.classList.add('hidden'));
+        return;
+      }
+
+      const safeNormCount = eligible.filter(x => x.issue.correctionLevel === 'SAFE_NORMALIZATION').length;
+      const highConfCount = eligible.filter(x => x.tier === 'SAFE' && x.issue.correctionLevel !== 'SAFE_NORMALIZATION').length;
+      const reviewLevelCount = eligible.filter(x => x.tier === 'REVIEW').length;
+      const conflictExcluded = excluded.filter(x => /conflict|identity/i.test(x.reason)).length;
+      const lowConfExcluded = excluded.length - conflictExcluded;
+
+      bulkPreviewBanner.classList.remove('hidden');
+      bulkPreviewBanner.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="font-extrabold text-blue-950">Apply suggested corrections?${reviewLevelCount > 0 ? ` (Includes ${reviewLevelCount} review-level fix(es))` : ''}</div>
+            <div class="text-[10px] text-slate-700 mt-0.5 mono-font">
+              Safe normalizations: ${safeNormCount} · High-confidence: ${highConfCount} · Review-level: ${reviewLevelCount} · Excluded conflicts/identity: ${conflictExcluded} · Excluded other: ${lowConfExcluded} · <b>Total to apply: ${eligible.length}</b>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button type="button" id="cancelBulkApplyBtn" class="px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-[10px] font-bold text-slate-700 hover:bg-slate-100 cursor-pointer">Cancel</button>
+            <button type="button" id="confirmBulkApplyBtn" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer">Apply ${eligible.length} Fixes</button>
+          </div>
+        </div>`;
+
+      document.getElementById('cancelBulkApplyBtn')?.addEventListener('click', () => {
+        bulkPreviewBanner.classList.add('hidden');
+      });
+      document.getElementById('confirmBulkApplyBtn')?.addEventListener('click', () => {
+        bulkPreviewBanner.classList.add('hidden');
+        executeAtomicBulkApply(includeReview);
+      });
+    }
+
+    function executeAtomicBulkApply(includeReviewLevel = false) {
+      const { eligible, excluded } = getEligibleBulkSuggestions(includeReviewLevel);
+      if (!eligible.length) return;
+
+      // Step 6: Save full pre-apply snapshot for single-level batch undo
+      bulkBatchSnapshot = {
+        text: outputText.value,
+        validationIssues: JSON.parse(JSON.stringify(validationIssues)),
+        qualityStats: { ...qualityStats },
+        v22StateSnapshot: {
+          ...v22State,
+          canonicalItems: new Map(v22State.canonicalItems)
+        }
+      };
+
+      // Step 7: Apply edits from end of text backwards to avoid position-shift errors
+      const orderedDesc = [...eligible].sort((a, b) => b.range.start - a.range.start);
+      let nextText = outputText.value;
+      let appliedCount = 0;
+      let skippedCount = 0;
+      const skipReasons = [];
+
+      for (const item of orderedDesc) {
+        const replacement = String(item.issue.suggestedValue ?? item.issue.suggested ?? '').trim();
+        if (!replacement) {
+          skippedCount += 1;
+          skipReasons.push(`Empty suggestion on line ${(item.issue.lineNumber || 0) + 1}`);
+          continue;
+        }
+        const currentSlice = nextText.slice(item.range.start, item.range.end);
+        if (currentSlice !== item.issue.originalValue) {
+          skippedCount += 1;
+          item.issue.status = 'STALE';
+          skipReasons.push(`Stale target "${item.issue.originalValue}" on line ${(item.issue.lineNumber || 0) + 1}`);
+          continue;
+        }
+        nextText = nextText.slice(0, item.range.start) + replacement + nextText.slice(item.range.end);
+        item.issue.status = 'APPLIED';
+        item.issue.suggestedValue = replacement;
+        item.issue.suggested = replacement;
+        appliedCount += 1;
+      }
+
+      outputText.value = nextText;
+      qualityStats.itemFixes = (qualityStats.itemFixes || 0) + appliedCount;
+
+      // Step 8-10: Re-run validation, refresh counts, quality scores, and render summary
+      detectCriticalFieldIssues(outputText.value);
+      enrichValidationIssuesMetadata();
+      renderValidationReview();
+      refreshQualityStatus();
+      updateCharCount();
+
+      const conflictCount = validationIssues.filter(i => i.status === 'pending' && i.riskLevel === 'CRITICAL').length;
+      const remainingReview = validationIssues.filter(i => i.status === 'pending').length;
+
+      lastBatchReport = {
+        applied: appliedCount,
+        skipped: skippedCount + excluded.length,
+        conflicts: conflictCount,
+        remainingReview,
+        skipReasons
+      };
+      renderBatchResultBanner();
+      updateBulkToolbarState();
+    }
+
+    function renderBatchResultBanner() {
+      if (!lastBatchReport) {
+        batchResultBanner.classList.add('hidden');
+        return;
+      }
+      batchResultBanner.classList.remove('hidden');
+      const r = lastBatchReport;
+      batchResultBanner.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="mono-font text-[10px]">
+            <b>Batch Summary:</b> Applied: <span class="text-emerald-700 font-bold">${r.applied}</span> ·
+            Skipped: <span class="text-amber-700 font-bold">${r.skipped}</span> ·
+            Conflicts: <span class="text-rose-700 font-bold">${r.conflicts}</span> ·
+            Still Requires Review: <span class="text-slate-800 font-bold">${r.remainingReview}</span>
+          </div>
+          <button type="button" id="dismissBatchResultBtn" class="px-2 py-0.5 rounded bg-white border border-slate-300 text-[10px] font-bold text-slate-600 hover:bg-slate-50 cursor-pointer">Dismiss</button>
+        </div>`;
+      document.getElementById('dismissBatchResultBtn')?.addEventListener('click', () => {
+        batchResultBanner.classList.add('hidden');
+      });
+    }
+
+    function undoLastBulkBatch() {
+      if (!bulkBatchSnapshot) return;
+      outputText.value = bulkBatchSnapshot.text;
+      validationIssues = JSON.parse(JSON.stringify(bulkBatchSnapshot.validationIssues));
+      qualityStats = { ...bulkBatchSnapshot.qualityStats };
+      v22State = {
+        ...bulkBatchSnapshot.v22StateSnapshot,
+        canonicalItems: new Map(bulkBatchSnapshot.v22StateSnapshot.canonicalItems)
+      };
+      bulkBatchSnapshot = null;
+      lastBatchReport = null;
+      bulkPreviewBanner.classList.add('hidden');
+      batchResultBanner.classList.add('hidden');
+      updateV22TelemetryUI();
+      renderValidationReview();
+      refreshQualityStatus();
+      updateCharCount();
+      updateBulkToolbarState();
+    }
+
+    // Geometry-aware Packing List column assignment & suspicious row detector
+    function assignTokenToColumn(token, columns, rowContext = {}) {
+      if (!token || !token.bbox || !Array.isArray(columns) || !columns.length) {
+        return { assignedColumn: 'description', assignmentConfidence: 40, alternativeColumns: [], reason: 'Missing geometry' };
+      }
+      const x0 = token.bbox.x0;
+      const x1 = token.bbox.x1;
+      const cx = (x0 + x1) / 2;
+      const w = Math.max(4, x1 - x0);
+      const txt = String(token.text || '').trim();
+
+      const scored = columns.map(col => {
+        const overlap = Math.max(0, Math.min(x1, col.xEnd ?? col.rangeMax ?? x1) - Math.max(x0, col.xStart ?? col.rangeMin ?? x0));
+        const overlapRatio = overlap / w;
+        const center = col.xCenter ?? col.center ?? ((col.xStart + col.xEnd) / 2);
+        const distScore = Math.max(0, 1 - Math.abs(cx - center) / 140);
+        let typeBonus = 0;
+        if (col.columnType === 'netWeight' || col.columnType === 'grossWeight') {
+          if (/^\d+(?:[.,]\d+)?\s*KG$/i.test(txt) || /^\d{1,3}(?:,\d{3})*(?:\.\d+)?$/.test(txt)) typeBonus = 18;
+        } else if (col.columnType === 'measurement') {
+          if (/\d+(?:\.\d+)?\s*[Xx×]\s*\d+/i.test(txt) || /\bCM\b/i.test(txt)) typeBonus = 20;
+        } else if (col.columnType === 'pcs' || col.columnType === 'ctn') {
+          if (/^\d{1,3}(?:,\d{3})*(?:\s*PCS)?$/i.test(txt)) typeBonus = 15;
+        } else if (col.columnType === 'description') {
+          if (/[A-Za-z]{3,}/.test(txt)) typeBonus = 14;
+        }
+        const totalScore = Math.round(overlapRatio * 45 + distScore * 30 + typeBonus + (col.headerConfidence ? col.headerConfidence * 0.15 : 10));
+        return { column: col.columnType || col.field, score: totalScore };
+      }).sort((a, b) => b.score - a.score);
+
+      const best = scored[0];
+      const conf = Math.max(25, Math.min(99, best.score));
+      return {
+        assignedColumn: best.column,
+        assignmentConfidence: conf,
+        alternativeColumns: scored.slice(1, 3),
+        reason: `Overlap/center geometry score ${conf}`
+      };
+    }
+
+    function detectMergedNumericPattern(value) {
+      const s = String(value || '').trim();
+      if (!s) return null;
+      // Multiple decimal groups like 1.032,00.1.50 or 15,636.7822.541.19
+      if (/\d+(?:[.,]\d+){3,}/.test(s) || /\d+\.\d{2}\d+\.\d{2}/.test(s)) {
+        return { merged: true, reason: `Merged or multi-decimal numeric pattern "${s}"` };
+      }
+      return null;
+    }
+
+    applyAllSafeBtn.addEventListener('click', showBulkPreviewSummary);
+    undoBatchBtn.addEventListener('click', undoLastBulkBatch);
+
+    const _v22ExtOrigDetect = detectCriticalFieldIssues;
+    detectCriticalFieldIssues = function(text) {
+      const res = _v22ExtOrigDetect.call(this, text);
+      enrichValidationIssuesMetadata();
+      renderValidationReview();
+      return res;
+    };
+
+    const _v22ExtOrigReset = resetV22State;
+    resetV22State = function() {
+      bulkBatchSnapshot = null;
+      lastBatchReport = null;
+      bulkPreviewBanner.classList.add('hidden');
+      batchResultBanner.classList.add('hidden');
+      _v22ExtOrigReset.call(this);
+      updateBulkToolbarState();
+    };
+
+    // =========================================================================
+    // V2.2 REGRESSION FIX: IMMUTABLE IDENTITY, RECORD BOUNDARIES & CORRECTION GATE
+    // =========================================================================
+
+    const exportStructuredCsvBtn = document.getElementById('exportStructuredCsvBtn');
+    const docTypeBadge = document.getElementById('docTypeBadge');
+    const docQualityBadge = document.getElementById('docQualityBadge');
+    const tableModeBadge = document.getElementById('tableModeBadge');
+    const suspiciousCountBadge = document.getElementById('suspiciousCountBadge');
+    const pageQualityStrip = document.getElementById('pageQualityStrip');
+
+    const V22_DEBUG_LOGGING = false;
+
+    let v22State = {
+      docType: { type: 'UNKNOWN', confidence: 0, signals: [] },
+      pageArtifacts: [],
+      logicalRecords: [],
+      structuredRows: [],
+      tableConfidence: 0,
+      canonicalItems: new Map(),
+      phraseConsensus: [],
+      suspiciousRows: [],
+      pageQualities: [],
+      documentQuality: 0,
+      provenance: [],
+      ocrCache: new Map(),
+      auditTrace: []
+    };
+
+    const V22_OCR_CONFUSION_PAIRS = new Set([
+      '02', '20', '09', '90', '29', '92', '01', '10', '08', '80',
+      '15', '51', '17', '71', '18', '81', '26', '62',
+      '28', '82', '35', '53', '36', '63', '56', '65',
+      'B8', '8B', 'O0', '0O', 'I1', '1I', 'L1', '1L',
+      'S5', '5S', 'G6', '6G', 'Z2', '2Z', 'T7', '7T'
+    ]);
+
+    function v22DebugLog(...args) {
+      if (V22_DEBUG_LOGGING && typeof console !== 'undefined') {
+        console.log('[V2.2-IdentityAudit]', ...args);
+      }
+    }
+
+    function createImmutableField(rawValue, meta = {}) {
+      const raw = rawValue == null ? '' : String(rawValue);
+      const normalized = safeNormalizeField(raw, meta.fieldType || 'TEXT');
+      return {
+        rawValue: raw,
+        normalizedValue: normalized,
+        suggestedValue: null,
+        finalValue: normalized,
+        fieldType: meta.fieldType || 'TEXT',
+        page: meta.page || 1,
+        lineNumber: meta.lineNumber ?? -1,
+        bbox: meta.bbox || null,
+        ocrConfidence: meta.ocrConfidence ?? null,
+        recordId: meta.recordId || null,
+        locked: Boolean(meta.locked),
+        correctionReason: ''
+      };
+    }
+
+    function safeNormalizeField(raw, fieldType) {
+      let s = String(raw ?? '').trim().replace(/\s+/g, ' ');
+      if (!s) return '';
+      if (fieldType === 'PACKAGE_NO') {
+        s = s.replace(/\s*-\s*/g, '-').toUpperCase();
+        if (s.startsWith('U') && !s.startsWith('#')) s = '#' + s;
+      } else if (fieldType === 'ITEM_NO') {
+        s = s.replace(/\s*-\s*/g, '-').toUpperCase();
+      } else if (fieldType === 'SHORT_ITEM_CODE' || fieldType === 'ITEM_CODE') {
+        s = s.replace(/[()\s]/g, '').toUpperCase();
+      } else if (fieldType === 'PO_NO') {
+        s = s.replace(/\s+/g, '').toUpperCase();
+      }
+      return s;
+    }
+
+    function extractNumericCore(value) {
+      const s = String(value ?? '').trim().toUpperCase();
+      if (!s) return '';
+      // #U2825410-100H or U2825410-100H -> 2825410
+      const pkgOrItem = s.match(/#?\s*U([0-9A-Z]{6,8})-[0-9A-Z]+/i);
+      if (pkgOrItem) return pkgOrItem[1];
+      // (2825410) -> 2825410
+      const paren = s.match(/\(([0-9A-Z]{6,8})\)/);
+      if (paren) return paren[1];
+      // Plain 7-digit numeric core
+      const plain = s.match(/\b(\d{6,8})\b/);
+      if (plain) return plain[1];
+      return '';
+    }
+
+    function isValidFormatForField(fieldType, value) {
+      const s = String(value ?? '').trim();
+      if (!s) return false;
+      if (fieldType === 'PACKAGE_NO') return /^#?U\d{7}-[0-9A-Z]{2,6}$/i.test(s);
+      if (fieldType === 'ITEM_NO') return /^U?\d{7}-[0-9A-Z]{2,6}$/i.test(s);
+      if (fieldType === 'SHORT_ITEM_CODE' || fieldType === 'ITEM_CODE') return /^\d{7}$/.test(s.replace(/[()]/g, ''));
+      if (fieldType === 'PO_NO') return /^\d{7,10}$/.test(s) || /^PO\d{6,10}$/i.test(s);
+      return true;
+    }
+
+    // 8. Centralized Correction Gate (Mandatory for all critical fields)
+    function evaluateCriticalFieldCorrection({
+      fieldType,
+      rawValue,
+      candidateValue,
+      rawOCRConfidence = 80,
+      rawFormatValid = true,
+      candidateFormatValid = true,
+      localStructuralAgreement = 0,
+      geometryConfidence = 80,
+      rowContextConfidence = 80,
+      documentConsensus = 0,
+      editDistance = Infinity,
+      correctionReason = ''
+    }) {
+      const rawNorm = safeNormalizeField(rawValue, fieldType);
+      const candNorm = safeNormalizeField(candidateValue, fieldType);
+
+      if (!candNorm || rawNorm === candNorm) {
+        return {
+          action: 'AUTO_NORMALIZE',
+          confidence: 99,
+          reason: 'Identity-preserving formatting normalization only'
+        };
+      }
+
+      // Check if only identity-preserving formatting changed (same numeric core for identity fields)
+      const rawCore = extractNumericCore(rawNorm);
+      const candCore = extractNumericCore(candNorm);
+      if (rawCore && candCore && rawCore === candCore && rawNorm.replace(/[^A-Z0-9]/gi, '') === candNorm.replace(/[^A-Z0-9]/gi, '')) {
+        return {
+          action: 'AUTO_NORMALIZE',
+          confidence: 98,
+          reason: 'Safe separator/casing normalization preserving identical identity'
+        };
+      }
+
+      // Rule 6 & 7: Valid raw value with local structural agreement or valid format must NEVER be silently replaced
+      if (localStructuralAgreement >= 2) {
+        return {
+          action: 'PRESERVE',
+          confidence: 99,
+          reason: `Protected by strong same-record structural agreement (${localStructuralAgreement} agreeing representations)`
+        };
+      }
+
+      // If BOTH raw and candidate are valid formatted codes (e.g. 2825410 vs 2825411, or 25033284 vs 25033285),
+      // never replace one valid code with another valid code via frequency or edit distance.
+      if (rawFormatValid && candidateFormatValid) {
+        if (localStructuralAgreement === 1) {
+          return {
+            action: 'PRESERVE',
+            confidence: 94,
+            reason: 'Raw value is valid and supported by same-record context; rejecting external candidate'
+          };
+        }
+        return {
+          action: 'PRESERVE',
+          confidence: 88,
+          reason: 'Both raw and candidate pass valid code format; global frequency/edit-distance replacement forbidden'
+        };
+      }
+
+      // Raw value is malformed, while candidate is valid and supported by same-record evidence
+      if (!rawFormatValid && candidateFormatValid) {
+        const evidenceScore = Math.min(97, Math.round(
+          (localStructuralAgreement >= 2 ? 45 : localStructuralAgreement === 1 ? 25 : 0) +
+          (geometryConfidence * 0.2) +
+          (rowContextConfidence * 0.2) +
+          (Math.min(3, documentConsensus) * 6) +
+          (editDistance <= 1 ? 12 : 0)
+        ));
+        if (localStructuralAgreement >= 1 || evidenceScore >= 72) {
+          return {
+            action: 'SUGGEST',
+            confidence: Math.max(70, evidenceScore),
+            reason: correctionReason || 'Malformed raw OCR value has valid candidate supported by record context'
+          };
+        }
+      }
+
+      return {
+        action: 'PRESERVE',
+        confidence: 70,
+        reason: 'Insufficient local evidence to override raw OCR value'
+      };
+    }
+
+    // 4. Identity Triple Validation (Package No. vs ITEM NO. vs Short Numeric Item Code)
+    function validateIdentityTriple(record) {
+      const pkgCore = extractNumericCore(record.packageNo.rawValue);
+      const itemCore = extractNumericCore(record.itemNo.rawValue);
+      const shortCore = extractNumericCore(record.shortItemCode.rawValue);
+
+      const present = [
+        { key: 'packageNo', label: 'Package No.', core: pkgCore, field: record.packageNo },
+        { key: 'itemNo', label: 'ITEM NO.', core: itemCore, field: record.itemNo },
+        { key: 'shortItemCode', label: 'Short Item Code', core: shortCore, field: record.shortItemCode }
+      ].filter(x => Boolean(x.core));
+
+      if (present.length === 0) {
+        record.identityConfidence = 'LOW';
+        record.identityLocked = false;
+        record.resolvedItemCore = '';
+        return;
+      }
+
+      const counts = new Map();
+      for (const p of present) {
+        counts.set(p.core, (counts.get(p.core) || 0) + 1);
+      }
+      const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+      const [topCore, topCount] = ranked[0];
+
+      // CASE 1: ALL THREE AGREE
+      if (present.length === 3 && topCount === 3) {
+        record.identityConfidence = 'VERY_HIGH';
+        record.identityLocked = true;
+        record.resolvedItemCore = topCore;
+        record.packageNo.locked = true;
+        record.itemNo.locked = true;
+        record.shortItemCode.locked = true;
+        return;
+      }
+
+      // CASE 2: TWO OF THREE AGREE
+      if (present.length >= 2 && topCount === 2) {
+        record.identityConfidence = 'HIGH_WITH_CONFLICT';
+        record.identityLocked = false;
+        record.resolvedItemCore = topCore;
+        const outlier = present.find(p => p.core !== topCore);
+        if (outlier) {
+          record.contradictions.push(
+            `Identity Triple mismatch in Record ${record.recordIndex + 1}: ${outlier.label} (${outlier.field.rawValue}) disagrees with local consensus ${topCore}.`
+          );
+          const gate = evaluateCriticalFieldCorrection({
+            fieldType: outlier.field.fieldType,
+            rawValue: outlier.field.rawValue,
+            candidateValue: outlier.field.rawValue.replace(outlier.core, topCore),
+            rawOCRConfidence: outlier.field.ocrConfidence ?? 75,
+            rawFormatValid: isValidFormatForField(outlier.field.fieldType, outlier.field.rawValue),
+            candidateFormatValid: true,
+            localStructuralAgreement: 2,
+            geometryConfidence: 88,
+            rowContextConfidence: 88,
+            documentConsensus: 1,
+            editDistance: hammingDistance(outlier.core, topCore),
+            correctionReason: `Two same-record identity fields agree on ${topCore}`
+          });
+          if (gate.action === 'SUGGEST') {
+            outlier.field.suggestedValue = outlier.field.rawValue.replace(outlier.core, topCore);
+            outlier.field.correctionReason = gate.reason;
+          }
+        }
+        return;
+      }
+
+      // CASE 3: ALL PRESENT REPRESENTATIONS DISAGREE (when >= 2 present)
+      if (present.length >= 2 && topCount === 1) {
+        record.identityConfidence = 'CONFLICT';
+        record.identityLocked = false;
+        record.resolvedItemCore = '';
+        record.contradictions.push(
+          `Identity Conflict in Record ${record.recordIndex + 1}: Package No. (${pkgCore || 'N/A'}), ITEM NO. (${itemCore || 'N/A'}), and Short Item Code (${shortCore || 'N/A'}) all disagree.`
+        );
+        return;
+      }
+
+      // CASE 4: ONLY ONE REPRESENTATION EXISTS
+      const single = present[0];
+      record.identityConfidence = isValidFormatForField(single.field.fieldType, single.field.rawValue) ? 'MEDIUM' : 'LOW';
+      record.identityLocked = false;
+      record.resolvedItemCore = single.core;
+    }
+
+    // 9 & 10. Logical Record Boundary Parser & Local PO Association
+    function parseLogicalRecordsFromText(text, docType) {
+      const lines = String(text || '').split('\n');
+      const records = [];
+      let current = null;
+      let currentPage = 1;
+
+      const isRecordStart = (line) => {
+        // A new logical record begins when a definite Package No. (#Uxxxxxxx-xxx) or standalone ITEM NO. block starts
+        const hasPkg = /#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+/i.test(line);
+        const hasItemLabel = /\bITEM\s*NO\.?\s*:\s*U?[0-9A-Z]{6,8}-[0-9A-Z]+/i.test(line);
+        return hasPkg || hasItemLabel;
+      };
+
+      const finalizeRecord = (rec) => {
+        if (!rec) return;
+        validateIdentityTriple(rec);
+        validateRecordInternalConsistency(rec);
+        records.push(rec);
+      };
+
+      lines.forEach((rawLine, lineIdx) => {
+        const pageMatch = rawLine.match(/^=== Page (\d+) ===$/);
+        if (pageMatch) {
+          currentPage = Number(pageMatch[1]);
+          return;
+        }
+
+        const line = rawLine.trim();
+        if (!line) return;
+
+        // Skip document header lines before table starts
+        if (/^(?:DREAM CREATION|TELEPHONE|FAX|TELEX|CABLE|INV\/DN DATE|CONSIGNEE|BANDAI NAMCO|28\/F|KWUN TONG|Shippee|Shipped|From\b|Via\b|sailing|Package No\b)/i.test(line)) {
+          return;
+        }
+
+        if (isRecordStart(line)) {
+          // Reset record-level identity state completely when a new Package/Item block begins
+          if (current) finalizeRecord(current);
+
+          const pkgMatch = line.match(/(#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
+          const itemNoMatch = line.match(/ITEM\s*NO\.?\s*:\s*(U?[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
+          const shortMatch = line.match(/\((\d{6,8})\)/);
+          const poMatch = line.match(/P\.?\s*O\.?\s*NO\.?\s*:\s*([0-9A-Z-]{6,14})/i);
+
+          current = {
+            recordIndex: records.length,
+            recordId: `REC-P${currentPage}-${records.length + 1}`,
+            page: currentPage,
+            startLine: lineIdx,
+            endLine: lineIdx,
+            docType,
+            packageNo: createImmutableField(pkgMatch ? pkgMatch[1] : '', {
+              fieldType: 'PACKAGE_NO',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: `REC-P${currentPage}-${records.length + 1}`
+            }),
+            itemNo: createImmutableField(itemNoMatch ? itemNoMatch[1] : '', {
+              fieldType: 'ITEM_NO',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: `REC-P${currentPage}-${records.length + 1}`
+            }),
+            shortItemCode: createImmutableField(shortMatch ? `(${shortMatch[1]})` : '', {
+              fieldType: 'SHORT_ITEM_CODE',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: `REC-P${currentPage}-${records.length + 1}`
+            }),
+            poNumber: createImmutableField(poMatch ? poMatch[1] : '', {
+              fieldType: 'PO_NO',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: `REC-P${currentPage}-${records.length + 1}`
+            }),
+            descriptionLines: [],
+            description: '',
+            ctn: '',
+            pcs: '',
+            pcsPerCtn: '',
+            netWeight: '',
+            grossWeight: '',
+            measurement: '',
+            identityConfidence: 'LOW',
+            identityLocked: false,
+            resolvedItemCore: '',
+            contradictions: [],
+            suspicious: false,
+            rowConfidence: 85
+          };
+          return;
+        }
+
+        if (!current) return;
+        current.endLine = lineIdx;
+
+        // Assign fields strictly within current logical record boundaries
+        if (!current.packageNo.rawValue) {
+          const pkgMatch = line.match(/(#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
+          if (pkgMatch) {
+            current.packageNo = createImmutableField(pkgMatch[1], {
+              fieldType: 'PACKAGE_NO',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: current.recordId
+            });
+          }
+        }
+
+        if (!current.itemNo.rawValue) {
+          const itemNoMatch = line.match(/ITEM\s*NO\.?\s*:\s*(U?[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
+          if (itemNoMatch) {
+            current.itemNo = createImmutableField(itemNoMatch[1], {
+              fieldType: 'ITEM_NO',
+              page: currentPage,
+              lineNumber: lineIdx,
+              recordId: current.recordId
+            });
+          }
+        }
+
+        const shortMatch = line.match(/^\s*\((\d{6,8})\)\s*$/) || line.match(/\((\d{6,8})\)/);
+        if (shortMatch && !current.shortItemCode.rawValue) {
+          current.shortItemCode = createImmutableField(`(${shortMatch[1]})`, {
+            fieldType: 'SHORT_ITEM_CODE',
+            page: currentPage,
+            lineNumber: lineIdx,
+            recordId: current.recordId
+          });
+          return;
+        }
+
+        const poMatch = line.match(/P\.?\s*O\.?\s*NO\.?\s*:\s*([0-9A-Z-]{6,14})/i);
+        if (poMatch && !current.poNumber.rawValue) {
+          current.poNumber = createImmutableField(poMatch[1], {
+            fieldType: 'PO_NO',
+            page: currentPage,
+            lineNumber: lineIdx,
+            recordId: current.recordId
+          });
+          return;
+        }
+
+        const perCtnMatch = line.match(/(\d+)\s*pcs\s*per\s*ctn\.?/i);
+        if (perCtnMatch) {
+          current.pcsPerCtn = perCtnMatch[1];
+          return;
+        }
+
+        // Metric row: CTN, PCS, Net Weight, Gross Weight, Measurement
+        const metricMatch = line.match(/(\d{1,3}(?:,\d{3})*)\s+(\d{1,3}(?:,\d{3})*)\s*PCS\b/i);
+        if (metricMatch) {
+          current.ctn = metricMatch[1];
+          current.pcs = `${metricMatch[2]} PCS`;
+
+          const kgMatches = [...line.matchAll(/(\d+(?:\.\d+)?)\s*KG\b/gi)];
+          if (kgMatches.length >= 1) current.netWeight = `${kgMatches[0][1]}KG`;
+          if (kgMatches.length >= 2) current.grossWeight = `${kgMatches[1][1]}KG`;
+
+          const dimMatch = line.match(/(\d+(?:\.\d+)?\s*[Xx]\s*\d+(?:\.\d+)?\s*[Xx]\s*\d+(?:\.\d+)?\s*CM)\b/i);
+          if (dimMatch) {
+            current.measurement = dimMatch[1].replace(/\s*[Xx]\s*/g, ' X ').replace(/\s+CM/i, ' CM');
+          }
+          return;
+        }
+
+        // Otherwise, if not a page footer/total line, treat as Description belonging to this record
+        if (!/^(?:TOTAL|For and on behalf|Authorized|PAGE:)/i.test(line)) {
+          current.descriptionLines.push(line);
+          current.description = current.descriptionLines.join(' ').trim();
+        }
+      });
+
+      if (current) finalizeRecord(current);
+      return records;
+    }
+
+    // 11 & 12. Internal Contradiction Detector & Evidence Improvement Guard
+    function validateRecordInternalConsistency(rec) {
+      const pkgCore = extractNumericCore(rec.packageNo.finalValue);
+      const itemCore = extractNumericCore(rec.itemNo.finalValue);
+      const shortCore = extractNumericCore(rec.shortItemCode.finalValue);
+
+      if (pkgCore && itemCore && pkgCore !== itemCore) {
+        rec.contradictions.push(`Package No. (${rec.packageNo.finalValue}) disagrees with ITEM NO. (${rec.itemNo.finalValue})`);
+      }
+      if (pkgCore && shortCore && pkgCore !== shortCore) {
+        rec.contradictions.push(`Package No. (${rec.packageNo.finalValue}) disagrees with Short Item Code (${rec.shortItemCode.finalValue})`);
+      }
+      if (itemCore && shortCore && itemCore !== shortCore) {
+        rec.contradictions.push(`ITEM NO. (${rec.itemNo.finalValue}) disagrees with Short Item Code (${rec.shortItemCode.finalValue})`);
+      }
+      if (!rec.poNumber.finalValue) {
+        rec.contradictions.push(`Missing local PO Number in ${rec.recordId}`);
+      }
+
+      // Arithmetic check within record
+      const ctns = parseNumericClean(rec.ctn);
+      const pcs = parseNumericClean(rec.pcs.replace(/\s*PCS$/i, ''));
+      const perCtn = parseNumericClean(rec.pcsPerCtn);
+      if (!Number.isNaN(ctns) && !Number.isNaN(perCtn) && !Number.isNaN(pcs)) {
+        if (Math.round(ctns * perCtn) !== Math.round(pcs)) {
+          rec.contradictions.push(`Arithmetic mismatch: ${ctns} CTN × ${perCtn} pcs/ctn = ${ctns * perCtn}, got ${pcs} PCS`);
+        }
+      }
+
+      const nw = parseNumericClean((rec.netWeight || '').replace(/KG$/i, ''));
+      const gw = parseNumericClean((rec.grossWeight || '').replace(/KG$/i, ''));
+      if (!Number.isNaN(nw) && !Number.isNaN(gw) && nw > gw + 0.01) {
+        rec.contradictions.push(`Net Weight (${nw}KG) exceeds Gross Weight (${gw}KG)`);
+      }
+
+      rec.suspicious = rec.contradictions.length > 0 || rec.identityConfidence === 'CONFLICT';
+      rec.rowConfidence = rec.suspicious
+        ? Math.max(40, 72 - rec.contradictions.length * 12)
+        : rec.identityConfidence === 'VERY_HIGH'
+          ? 98
+          : 90;
+    }
+
+    function doesCorrectionImproveRecord(record, fieldKey, proposedValue) {
+      const clone = {
+        ...record,
+        packageNo: { ...record.packageNo },
+        itemNo: { ...record.itemNo },
+        shortItemCode: { ...record.shortItemCode },
+        poNumber: { ...record.poNumber },
+        contradictions: []
+      };
+      clone[fieldKey].finalValue = proposedValue;
+      validateRecordInternalConsistency(clone);
+
+      const beforeContradictions = record.contradictions.length;
+      const afterContradictions = clone.contradictions.length;
+      return afterContradictions < beforeContradictions;
+    }
+
+    // 5. Document-Level Canonical Item Code Dictionary (Supporting Evidence Only)
+    function buildCanonicalItemDictionary(text, logicalRecords) {
+      const dict = new Map();
+      const register = (code, conf, evidence) => {
+        const clean = extractNumericCore(code);
+        if (!/^\d{6,8}$/.test(clean)) return;
+        const entry = dict.get(clean) || {
+          code: clean,
+          count: 0,
+          maxConf: 0,
+          evidences: new Set()
+        };
+        entry.count += 1;
+        entry.maxConf = Math.max(entry.maxConf, Number(conf || 80));
+        if (evidence) entry.evidences.add(evidence);
+        dict.set(clean, entry);
+      };
+
+      for (const rec of logicalRecords) {
+        if (rec.resolvedItemCore) register(rec.resolvedItemCore, 94, 'Logical record');
+      }
+
+      const lines = String(text || '').split('\n');
+      for (const line of lines) {
+        for (const m of line.matchAll(/#\s*U(\d{7})-[0-9A-Z]+/gi)) register(m[1], 92, 'Package No.');
+        for (const m of line.matchAll(/ITEM\s*NO\.?\s*:\s*U?(\d{7})/gi)) register(m[1], 92, 'ITEM NO.');
+        for (const m of line.matchAll(/\((\d{7})\)/g)) register(m[1], 90, 'Parenthesized Item');
+        const poRowMatch = line.match(/^\s*(\d{7})\s+[A-Z0-9].*\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i);
+        if (poRowMatch) register(poRowMatch[1], 92, 'PO Item Column');
+      }
+
+      return dict;
+    }
+
+    // 7. Restricted Fuzzy Matching (Malformed values ONLY — NEVER valid-to-valid replacement)
+    function findCanonicalItemMatch(rawToken, canonicalDict, recordContext = null) {
+      if (recordContext && recordContext.identityLocked) {
+        return null; // Identity is locked by 3-way local agreement; never touch it
+      }
+
+      const cleaned = String(rawToken || '').replace(/^[£$¥€#]+/, '').trim();
+      if (!cleaned) return null;
+
+      // Never replace a valid 7-digit numeric code with another valid 7-digit code!
+      if (/^\d{7}$/.test(cleaned)) {
+        return null;
+      }
+
+      // Only evaluate malformed lengths (e.g. 8-digit stray character like 29037764 -> 2903776)
+      if (/^\d{8}$/.test(cleaned)) {
+        const prefix7 = cleaned.slice(0, 7);
+        if (canonicalDict.has(prefix7) && canonicalDict.get(prefix7).count >= 2) {
+          return {
+            candidate: prefix7,
+            editDistance: 1,
+            reason: `Malformed 8-digit code "${cleaned}" matches repeated 7-digit Item Code ${prefix7}`
+          };
+        }
+      }
+
+      return null;
+    }
+
+    // 6. Document-Local Phrase Consensus (Descriptions ONLY — NEVER Item Codes, Package Nos, or PO Nos)
+    function isProtectedIdentityLine(line) {
+      const s = String(line || '').trim();
+      return (
+        /#\s*U[0-9A-Z]{6,8}-/i.test(s) ||
+        /\bITEM\s*NO\.?\s*:/i.test(s) ||
+        /\bP\.?\s*O\.?\s*NO\.?\s*:/i.test(s) ||
+        /^\(\d{6,8}\)$/.test(s) ||
+        /\bPO\d{5,}\b/i.test(s)
+      );
+    }
+
+    function tokenSimilarity(a, b) {
+      const ta = new Set(String(a || '').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean));
+      const tb = new Set(String(b || '').toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean));
+      if (!ta.size || !tb.size) return 0;
+      let inter = 0;
+      for (const x of ta) if (tb.has(x)) inter += 1;
+      return inter / Math.max(ta.size, tb.size);
+    }
+
+    function buildPhraseConsensus(text) {
+      const lines = String(text || '').split('\n');
+      const phraseCounts = new Map();
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.length < 14 || /^=== Page/.test(trimmed)) continue;
+        // CRITICAL REGRESSION GUARD: Never run phrase consensus on Package No., ITEM NO., or PO NO. lines
+        if (isProtectedIdentityLine(trimmed)) continue;
+
+        const key = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
+        if (!key) continue;
+        const entry = phraseCounts.get(key) || { phrase: trimmed, count: 0 };
+        entry.count += 1;
+        if (trimmed.length > entry.phrase.length) entry.phrase = trimmed;
+        phraseCounts.set(key, entry);
+      }
+
+      return [...phraseCounts.values()].filter(p => p.count >= 2);
+    }
+
+    function detectDocumentType(text) {
+      const upper = String(text || '').toUpperCase();
+      const rules = {
+        PURCHASE_ORDER: [
+          { re: /\bPURCHASE\s+ORDER\b/, w: 30, label: 'PURCHASE ORDER' },
+          { re: /\bPO\s*NO\.?\b/, w: 22, label: 'PO No.' },
+          { re: /\bORDERED\s+QTY\b/, w: 22, label: 'Ordered Qty' },
+          { re: /\bPARTIAL\s+(?:SHIPMENT\s+)?QTY\b/, w: 20, label: 'Partial Qty' },
+          { re: /\bUNIT\s+PRICE\b/, w: 20, label: 'Unit Price' },
+          { re: /\bJAN\s+CODE\b/, w: 20, label: 'JAN Code' },
+          { re: /\bESTIMATED(?:\s+DATE)?\b/, w: 12, label: 'Estimated' },
+          { re: /\bINCOTERMS\b/, w: 10, label: 'Incoterms' }
+        ],
+        PACKING_LIST: [
+          { re: /\bPACKING\s+LIST\b/, w: 32, label: 'PACKING LIST' },
+          { re: /\bPACKAGE\s+NO\.?\b/, w: 22, label: 'Package No.' },
+          { re: /\bNO\.?\s+OF\s+PACKAGE\b/, w: 20, label: 'No of Package' },
+          { re: /\bNET\s+WEIGHT\b/, w: 22, label: 'Net Weight' },
+          { re: /\bGROSS\s+WEIGHT\b/, w: 22, label: 'Gross Weight' },
+          { re: /\bMEASUREMENT\b/, w: 20, label: 'Measurement' },
+          { re: /\bPCS\s*\/\s*CTN\b|\bPCS\s+PER\s+CTN\b/i, w: 18, label: 'PCS/CTN' },
+          { re: /\bCARTONS?\s+AND\s+\d+\s+PACKAGES?\b/i, w: 16, label: 'Cartons & Packages' }
+        ],
+        INVOICE: [
+          { re: /\bINVOICE\b/, w: 24, label: 'INVOICE' },
+          { re: /\bINVOICE\s+NO\.?\b/, w: 22, label: 'Invoice No.' },
+          { re: /\bGOODS\s*&?\s*DESCRIPTION\b/, w: 24, label: 'Goods & Description' },
+          { re: /\bQUANTITIES\b/, w: 16, label: 'Quantities' },
+          { re: /\bUNIT\b/, w: 10, label: 'Unit' },
+          { re: /\bAMOUNT\b/, w: 14, label: 'Amount' },
+          { re: /\bFOB\s+[A-Z]{2,15}\b/, w: 12, label: 'FOB Term' }
+        ]
+      };
+
+      const scores = { PURCHASE_ORDER: 0, PACKING_LIST: 0, INVOICE: 0 };
+      const matchedByType = { PURCHASE_ORDER: [], PACKING_LIST: [], INVOICE: [] };
+
+      for (const [docType, list] of Object.entries(rules)) {
+        for (const item of list) {
+          if (item.re.test(upper)) {
+            scores[docType] += item.w;
+            matchedByType[docType].push(item.label);
+          }
+        }
+      }
+
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      const [bestType, bestScore] = ranked[0];
+      const secondScore = ranked[1] ? ranked[1][1] : 0;
+
+      if (bestScore < 20) {
+        return { type: 'UNKNOWN', confidence: Math.min(45, bestScore), signals: matchedByType[bestType] || [] };
+      }
+
+      const marginBonus = Math.max(0, bestScore - secondScore) * 0.35;
+      const confidence = Math.min(99, Math.max(55, Math.round(Math.min(95, bestScore * 1.1 + marginBonus))));
+      return {
+        type: bestType,
+        confidence,
+        signals: matchedByType[bestType]
+      };
+    }
+
+    function calculatePageQuality(pageNum, pageArtifact, allIssues) {
+      const pageIssues = (allIssues || []).filter(i => (i.page || 1) === pageNum && i.status === 'pending');
+      const criticalCount = pageIssues.filter(i => i.severity === 'critical').length;
+      const reviewCount = pageIssues.length - criticalCount;
+
+      const avgOcrConf = pageArtifact && pageArtifact.avgWordConfidence
+        ? pageArtifact.avgWordConfidence
+        : 88;
+      const geomConf = pageArtifact && pageArtifact.geometryConfidence
+        ? pageArtifact.geometryConfidence
+        : 86;
+
+      let score = Math.round(avgOcrConf * 0.45 + geomConf * 0.25 + 30);
+      score -= criticalCount * 8;
+      score -= reviewCount * 3;
+      score = Math.max(25, Math.min(99, score));
+
+      return {
+        page: pageNum,
+        score,
+        reviewFlag: score < 78 || criticalCount >= 2,
+        summary: `Page ${pageNum}: ${score}% | Pending issues: ${pageIssues.length}`
+      };
+    }
+
+    function calculateDocumentQuality(pageQualities, allIssues) {
+      if (!pageQualities.length) return 0;
+      const avgPage = pageQualities.reduce((acc, p) => acc + p.score, 0) / pageQualities.length;
+      const pendingCritical = (allIssues || []).filter(i => i.status === 'pending' && i.severity === 'critical').length;
+      const penalty = Math.min(25, pendingCritical * 3);
+      return Math.max(20, Math.min(99, Math.round(avgPage - penalty)));
+    }
+
+    function resetV22State() {
+      v22State = {
+        docType: { type: 'UNKNOWN', confidence: 0, signals: [] },
+        pageArtifacts: [],
+        logicalRecords: [],
+        structuredRows: [],
+        tableConfidence: 0,
+        canonicalItems: new Map(),
+        phraseConsensus: [],
+        suspiciousRows: [],
+        pageQualities: [],
+        documentQuality: 0,
+        provenance: [],
+        ocrCache: new Map(),
+        auditTrace: []
+      };
+      exportStructuredCsvBtn.disabled = true;
+      updateV22TelemetryUI();
+    }
+
+    function updateV22TelemetryUI() {
+      const dt = v22State.docType || { type: 'UNKNOWN', confidence: 0, signals: [] };
+      docTypeBadge.textContent = `${dt.type} (${dt.confidence}%)`;
+      docTypeBadge.title = dt.signals.length ? `Matched signals: ${dt.signals.join(', ')}` : 'No strong document type signal matched';
+
+      const dq = v22State.documentQuality || 0;
+      docQualityBadge.textContent = outputText.value.trim() ? `${dq}%` : '-';
+      docQualityBadge.className = `px-2 py-0.5 rounded-full border mono-font text-[10px] font-bold ${
+        !outputText.value.trim() ? 'bg-slate-100 text-slate-700 border-slate-200'
+        : dq >= 90 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+        : dq >= 75 ? 'bg-amber-100 text-amber-800 border-amber-300'
+        : 'bg-rose-100 text-rose-800 border-rose-300'
+      }`;
+
+      const hasStructured = v22State.structuredRows.length > 0 && v22State.tableConfidence >= 55;
+      tableModeBadge.textContent = hasStructured
+        ? `Records Locked (${v22State.structuredRows.length} rows)`
+        : 'Standard Fallback';
+      exportStructuredCsvBtn.disabled = !hasStructured;
+
+      const suspCount = v22State.suspiciousRows.length;
+      suspiciousCountBadge.textContent = String(suspCount);
+      suspiciousCountBadge.className = `px-2 py-0.5 rounded-full border mono-font text-[10px] font-bold ${
+        suspCount > 0 ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-slate-100 text-slate-700 border-slate-200'
+      }`;
+
+      if (!v22State.pageQualities.length) {
+        pageQualityStrip.innerHTML = '<span>Page Quality: -</span>';
+      } else {
+        pageQualityStrip.innerHTML = v22State.pageQualities.map(pq => {
+          const needsReview = pq.score < 78 || pq.reviewFlag;
+          const cls = needsReview
+            ? 'bg-rose-50 text-rose-700 border-rose-200 font-bold'
+            : pq.score >= 90
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              : 'bg-slate-100 text-slate-700 border-slate-200';
+          return `<span class="px-1.5 py-0.5 rounded border ${cls}" title="${escapeHtml(pq.summary || '')}">P${pq.page} ${pq.score}%${needsReview ? ' REVIEW' : ''}</span>`;
+        }).join('');
+      }
+    }
+
+    exportStructuredCsvBtn.addEventListener('click', () => {
+      if (!v22State.structuredRows.length || v22State.tableConfidence < 55) {
+        alert('Structured table confidence is too low to export reliable logical columns. Use standard Export (.csv) or review the text first.');
+        return;
+      }
+      const headers = [
+        'Page', 'Record ID', 'PO', 'Package No.', 'ITEM NO.', 'Item Code',
+        'Description', 'CTN', 'PCS', 'PCS/CTN', 'Net Weight', 'Gross Weight',
+        'Measurement', 'Identity Confidence', 'Flag'
+      ];
+      const escapeCell = v => `"${String(v ?? '').trim().replace(/"/g, '""')}"`;
+      const csvLines = [
+        headers.map(escapeCell).join(','),
+        ...v22State.structuredRows.map(r => [
+          r.page || 1,
+          r.recordId || '',
+          r.po || '',
+          r.packageNo || '',
+          r.itemNo || '',
+          r.itemCode || '',
+          r.description || '',
+          r.ctn || '',
+          r.pcs || '',
+          r.pcsPerCtn || '',
+          r.netWeight || '',
+          r.grossWeight || '',
+          r.measurement || '',
+          r.identityConfidence || '',
+          r.suspicious ? 'REVIEW' : 'OK'
+        ].map(escapeCell).join(','))
+      ];
+      const blob = new Blob(['\uFEFF' + csvLines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentFileName}_structured_v22.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    function runV22DocumentIntelligence(fullText) {
+      const docType = detectDocumentType(fullText);
+      const lines = String(fullText || '').split('\n');
+      const pageMatches = [...String(fullText || '').matchAll(/^=== Page (\d+) ===$/gm)];
+      const numPages = pageMatches.length ? Math.max(...pageMatches.map(m => Number(m[1]))) : 1;
+
+      // 1. Parse strict logical record boundaries (prevents cross-record borrowing of Item Code / PO Number)
+      const logicalRecords = parseLogicalRecordsFromText(fullText, docType.type);
+      const canonicalItems = buildCanonicalItemDictionary(fullText, logicalRecords);
+      const phraseConsensus = buildPhraseConsensus(fullText);
+
+      // 2. Log full diagnostic trace when enabled & surface any internal record contradictions to Validation Review
+      const suspiciousRows = [];
+      for (const rec of logicalRecords) {
+        v22DebugLog(rec.recordId, {
+          packageNo: rec.packageNo,
+          itemNo: rec.itemNo,
+          shortItemCode: rec.shortItemCode,
+          poNumber: rec.poNumber,
+          identityConfidence: rec.identityConfidence,
+          identityLocked: rec.identityLocked,
+          contradictions: rec.contradictions
+        });
+
+        if (rec.contradictions.length > 0) {
+          suspiciousRows.push({
+            page: rec.page,
+            lineNumber: rec.startLine,
+            recordId: rec.recordId,
+            reasons: rec.contradictions
+          });
+          addValidationIssue({
+            type: 'Identity / Record Conflict',
+            severity: 'critical',
+            original: rec.packageNo.rawValue || rec.itemNo.rawValue || rec.recordId,
+            suggested: rec.resolvedItemCore ? `#U${rec.resolvedItemCore}-100H` : (rec.packageNo.rawValue || rec.recordId),
+            confidence: rec.rowConfidence,
+            reason: rec.contradictions.join(' | '),
+            lineNumber: rec.startLine,
+            column: 0,
+            page: rec.page,
+            context: lines[rec.startLine] || '',
+            source: 'Logical Record Boundary & Identity Triple Audit',
+            issueKey: `rec-conflict|${rec.recordId}|${rec.contradictions.join(';')}`
+          });
+        }
+      }
+
+      // 3. Phrase consensus ONLY for non-identity description lines
+      if (phraseConsensus.length) {
+        const canonicalPhrases = phraseConsensus.filter(p => p.count >= 2);
+        lines.forEach((line, lineIdx) => {
+          const trimmed = line.trim();
+          if (trimmed.length < 14 || /^=== Page/.test(trimmed)) return;
+          if (isProtectedIdentityLine(trimmed)) return;
+          const page = currentPageForLine(lines, lineIdx);
+          for (const cp of canonicalPhrases) {
+            if (trimmed === cp.phrase) continue;
+            const sim = tokenSimilarity(trimmed, cp.phrase);
+            if (sim >= 0.78 && Math.abs(trimmed.length - cp.phrase.length) <= 8) {
+              addValidationIssue({
+                type: 'Description Phrase Consensus',
+                severity: 'review',
+                original: trimmed,
+                suggested: cp.phrase,
+                confidence: 84,
+                reason: `Description line matches repeated phrase (${cp.count}x) with ${Math.round(sim * 100)}% token overlap.`,
+                lineNumber: lineIdx,
+                column: 0,
+                page,
+                context: line,
+                source: 'Non-identity phrase consensus',
+                issueKey: `phrase-v22|${page}|${lineIdx}|${cp.phrase.slice(0, 24)}`
+              });
+              break;
+            }
+          }
+        });
+      }
+
+      // 4. Build structured rows directly from validated logical records (immutable raw values preserved on record)
+      const structuredRows = logicalRecords.map(rec => ({
+        page: rec.page,
+        recordId: rec.recordId,
+        po: rec.poNumber.finalValue,
+        packageNo: rec.packageNo.finalValue,
+        itemNo: rec.itemNo.finalValue,
+        itemCode: rec.resolvedItemCore || extractNumericCore(rec.shortItemCode.finalValue),
+        description: rec.description,
+        ctn: rec.ctn,
+        pcs: rec.pcs,
+        pcsPerCtn: rec.pcsPerCtn,
+        netWeight: rec.netWeight,
+        grossWeight: rec.grossWeight,
+        measurement: rec.measurement,
+        identityConfidence: rec.identityConfidence,
+        rowConfidence: rec.rowConfidence,
+        suspicious: rec.suspicious
+      }));
+
+      const tableConfidence = logicalRecords.length > 0
+        ? Math.round(logicalRecords.reduce((acc, r) => acc + r.rowConfidence, 0) / logicalRecords.length)
+        : 0;
+
+      const pageQualities = [];
+      for (let p = 1; p <= numPages; p++) {
+        const art = v22State.pageArtifacts.find(a => a.page === p);
+        pageQualities.push(calculatePageQuality(p, art, validationIssues));
+      }
+      const documentQuality = calculateDocumentQuality(pageQualities, validationIssues);
+
+      v22State.docType = docType;
+      v22State.logicalRecords = logicalRecords;
+      v22State.structuredRows = structuredRows;
+      v22State.tableConfidence = tableConfidence;
+      v22State.canonicalItems = canonicalItems;
+      v22State.phraseConsensus = phraseConsensus;
+      v22State.suspiciousRows = suspiciousRows;
+      v22State.pageQualities = pageQualities;
+      v22State.documentQuality = documentQuality;
+
+      updateV22TelemetryUI();
+    }
+
+    // 13. Deterministic DCI-2609006-3 Six-Record Regression Self-Test
+    function runDciRegressionSelfTest(sampleText) {
+      const records = parseLogicalRecordsFromText(sampleText, 'PACKING_LIST');
+      const expected = [
+        { item: '2825410', po: '25033284', desc: 'GA EX. PACK 01 - UNICORN (EN)', ctn: '125', pcs: '3,000 PCS', net: '5.88KG', gross: '7.00KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
+        { item: '2825411', po: '25033284', desc: 'GA EX. PACK 02 - WITCH', ctn: '125', pcs: '3,000 PCS', net: '6.28KG', gross: '7.40KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
+        { item: '2825410', po: '25033285', desc: 'GA EX. PACK 01 - UNICORN (EN)', ctn: '1,281', pcs: '30,744 PCS', net: '5.88KG', gross: '7.00KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
+        { item: '2825411', po: '25033285', desc: 'GA EX. PACK 02 - WITCH FR', ctn: '1,224', pcs: '29,376 PCS', net: '6.28KG', gross: '7.40KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
+        { item: '2859594', po: '25033099', desc: 'Gundam Assemble PLANT', ctn: '380', pcs: '9,120 PCS', net: '12.96KG', gross: '14.10KG', meas: '52.0 X 51.0 X 34.5 CM', perCtn: '24' },
+        { item: '2859594', po: '25033294', desc: 'Gundam Assemble PLANT', ctn: '125', pcs: '3,000 PCS', net: '12.96KG', gross: '14.10KG', meas: '52.0 X 51.0 X 34.5 CM', perCtn: '24' }
+      ];
+
+      const failures = [];
+      if (records.length !== expected.length) {
+        failures.push(`Expected ${expected.length} logical records, got ${records.length}`);
+      }
+      expected.forEach((exp, i) => {
+        const rec = records[i];
+        if (!rec) return;
+        if (rec.resolvedItemCore !== exp.item) failures.push(`Record ${i + 1} item mismatch: got ${rec.resolvedItemCore}, expected ${exp.item}`);
+        if (rec.poNumber.finalValue !== exp.po) failures.push(`Record ${i + 1} PO mismatch: got ${rec.poNumber.finalValue}, expected ${exp.po}`);
+        if (rec.description !== exp.desc) failures.push(`Record ${i + 1} desc mismatch: got "${rec.description}", expected "${exp.desc}"`);
+        if (rec.ctn !== exp.ctn) failures.push(`Record ${i + 1} CTN mismatch: got ${rec.ctn}, expected ${exp.ctn}`);
+        if (rec.pcs !== exp.pcs) failures.push(`Record ${i + 1} PCS mismatch: got ${rec.pcs}, expected ${exp.pcs}`);
+        if (rec.netWeight !== exp.net) failures.push(`Record ${i + 1} Net mismatch: got ${rec.netWeight}, expected ${exp.net}`);
+        if (rec.grossWeight !== exp.gross) failures.push(`Record ${i + 1} Gross mismatch: got ${rec.grossWeight}, expected ${exp.gross}`);
+        if (rec.measurement !== exp.meas) failures.push(`Record ${i + 1} Meas mismatch: got ${rec.measurement}, expected ${exp.meas}`);
+        if (rec.pcsPerCtn !== exp.perCtn) failures.push(`Record ${i + 1} pcsPerCtn mismatch: got ${rec.pcsPerCtn}, expected ${exp.perCtn}`);
+        if (!rec.identityLocked || rec.identityConfidence !== 'VERY_HIGH') failures.push(`Record ${i + 1} identity not locked at VERY_HIGH`);
+        if (rec.contradictions.length > 0) failures.push(`Record ${i + 1} unexpected contradictions: ${rec.contradictions.join('; ')}`);
+      });
+
+      return { passed: failures.length === 0, recordCount: records.length, failures, records };
+    }
+
+    const _v22OrigProcessPDF = processPDF;
+    processPDF = async function(arrayBuffer) {
+      resetV22State();
+      return await _v22OrigProcessPDF.call(this, arrayBuffer);
+    };
+
+    const _v22OrigExtractStructuredOcrText = extractStructuredOcrText;
+    extractStructuredOcrText = function(data, quantityCandidates = [], pageWidth = 0, pageHeight = 0) {
+      const currentPageNum = (v22State.pageArtifacts.length || 0) + 1;
+      const words = collectOcrWords(data);
+      const avgConf = words.length
+        ? words.reduce((s, w) => s + Number(w.confidence || 0), 0) / words.length
+        : 84;
+      v22State.pageArtifacts.push({
+        page: currentPageNum,
+        width: pageWidth,
+        height: pageHeight,
+        ocrData: data,
+        geometryConfidence: 88,
+        avgWordConfidence: avgConf
+      });
+      return _v22OrigExtractStructuredOcrText.call(this, data, quantityCandidates, pageWidth, pageHeight);
+    };
+
+    const _v22OrigDetectCriticalFieldIssues = detectCriticalFieldIssues;
+    detectCriticalFieldIssues = function(text) {
+      const res = _v22OrigDetectCriticalFieldIssues.call(this, text);
+      runV22DocumentIntelligence(text);
+      return res;
+    };
+
   </script>
 </body>
 </html>
