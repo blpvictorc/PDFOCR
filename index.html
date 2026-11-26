@@ -30,6 +30,15 @@
 
     .dark-scroll::-webkit-scrollbar-thumb { background: #475569; }
     .dark-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+    /* Interactive Pan & Zoom Cursor States */
+    #previewContainer.can-pan {
+      cursor: grab;
+    }
+    #previewContainer.is-panning {
+      cursor: grabbing !important;
+      user-select: none;
+    }
   </style>
 </head>
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden select-none">
@@ -201,17 +210,35 @@
       <!-- Dual-Pane Split View -->
       <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 overflow-hidden">
 
-        <!-- Left Panel: High-Res PDF Page Preview -->
+        <!-- Left Panel: High-Res PDF Page Preview with Zoom & Drag-to-Pan -->
         <div class="bg-slate-950 rounded-2xl border border-slate-300 shadow-inner flex flex-col overflow-hidden">
-          <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex items-center justify-between shrink-0">
+          <div class="bg-slate-900 border-b border-slate-800 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
             <span class="text-xs font-bold text-slate-200 flex items-center gap-2">
               <i class="fa-regular fa-file-pdf text-rose-400"></i>
-              Original Document Preview (High-DPI Render)
+              Original Document Preview
             </span>
-            <span class="text-[10px] font-medium text-slate-400 mono-font">Visual Verification</span>
+
+            <!-- Zoom & Pan Controls -->
+            <div class="flex items-center gap-1.5">
+              <span class="hidden xl:inline text-[10px] text-slate-400 mr-1" title="Drag to pan; Ctrl + Scroll wheel to zoom">
+                <i class="fa-solid fa-hand text-slate-500 mr-1"></i>Drag to Pan • Ctrl+Wheel
+              </span>
+              <div class="flex items-center bg-slate-950 border border-slate-700 rounded-lg p-0.5">
+                <button type="button" id="previewZoomOutBtn" disabled class="w-6 h-6 rounded text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-35 disabled:pointer-events-none flex items-center justify-center transition cursor-pointer" title="Zoom Out (-)">
+                  <i class="fa-solid fa-minus text-[10px]"></i>
+                </button>
+                <span id="previewZoomLabel" class="px-2 text-[10px] font-bold text-slate-200 mono-font min-w-[46px] text-center">100%</span>
+                <button type="button" id="previewZoomInBtn" disabled class="w-6 h-6 rounded text-slate-300 hover:bg-slate-800 hover:text-white disabled:opacity-35 disabled:pointer-events-none flex items-center justify-center transition cursor-pointer" title="Zoom In (+)">
+                  <i class="fa-solid fa-plus text-[10px]"></i>
+                </button>
+              </div>
+              <button type="button" id="previewZoomResetBtn" disabled class="px-2 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] font-bold text-slate-200 disabled:opacity-35 disabled:pointer-events-none transition cursor-pointer" title="Reset Zoom to Fit Width (Double-click preview)">
+                Fit
+              </button>
+            </div>
           </div>
-          <div id="previewContainer" class="flex-1 overflow-auto dark-scroll p-4 flex flex-col items-center gap-4 bg-slate-900/60">
-            <div class="h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
+          <div id="previewContainer" class="flex-1 overflow-auto dark-scroll p-4 flex flex-col items-start gap-4 bg-slate-900/60">
+            <div class="w-full h-full flex flex-col items-center justify-center text-slate-500 text-xs gap-2 py-12">
               <i class="fa-regular fa-eye text-2xl text-slate-600"></i>
               <span>Rendered PDF pages will appear here for side-by-side comparison</span>
             </div>
@@ -316,6 +343,10 @@
     const progressWrap = document.getElementById('progressWrap');
     const progressFill = document.getElementById('progressFill');
     const previewContainer = document.getElementById('previewContainer');
+    const previewZoomOutBtn = document.getElementById('previewZoomOutBtn');
+    const previewZoomInBtn = document.getElementById('previewZoomInBtn');
+    const previewZoomResetBtn = document.getElementById('previewZoomResetBtn');
+    const previewZoomLabel = document.getElementById('previewZoomLabel');
     const outputText = document.getElementById('outputText');
     const pageCountInfo = document.getElementById('pageCountInfo');
     const charCountInfo = document.getElementById('charCountInfo');
@@ -336,6 +367,116 @@
     let activeProvenanceId = '';
     let activeProvenanceRecordId = '';
     let activeAdHocProvenance = null;
+
+    // Preview Zoom & Drag-to-Pan State
+    let previewZoom = 1.0;
+    const MIN_PREVIEW_ZOOM = 0.5;
+    const MAX_PREVIEW_ZOOM = 3.0;
+    const ZOOM_STEP = 0.25;
+    let activeHighlightedIssue = null;
+    let isPreviewPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let panStartScrollLeft = 0;
+    let panStartScrollTop = 0;
+
+    function applyPreviewZoom(newZoom, anchorClientX = null, anchorClientY = null) {
+      const canvases = previewContainer.querySelectorAll('canvas');
+      const clamped = Math.max(MIN_PREVIEW_ZOOM, Math.min(MAX_PREVIEW_ZOOM, Math.round(newZoom * 100) / 100));
+      const prevZoom = previewZoom;
+      previewZoom = clamped;
+      previewZoomLabel.textContent = `${Math.round(previewZoom * 100)}%`;
+
+      const hasPages = canvases.length > 0;
+      previewZoomOutBtn.disabled = !hasPages || previewZoom <= MIN_PREVIEW_ZOOM;
+      previewZoomInBtn.disabled = !hasPages || previewZoom >= MAX_PREVIEW_ZOOM;
+      previewZoomResetBtn.disabled = !hasPages;
+      previewContainer.classList.toggle('can-pan', hasPages);
+
+      if (!hasPages) return;
+
+      const containerRect = previewContainer.getBoundingClientRect();
+      const focusX = anchorClientX !== null ? (anchorClientX - containerRect.left) : (previewContainer.clientWidth / 2);
+      const focusY = anchorClientY !== null ? (anchorClientY - containerRect.top) : (previewContainer.clientHeight / 2);
+      const contentX = previewContainer.scrollLeft + focusX;
+      const contentY = previewContainer.scrollTop + focusY;
+      const ratio = previewZoom / (prevZoom || 1);
+
+      const baseWidth = Math.max(260, previewContainer.clientWidth - 32);
+      const targetWidth = Math.round(baseWidth * previewZoom);
+
+      canvases.forEach(canvas => {
+        canvas.style.width = `${targetWidth}px`;
+        canvas.style.maxWidth = 'none';
+        canvas.style.height = 'auto';
+        const wrapper = canvas.parentElement;
+        if (wrapper) {
+          wrapper.style.width = `${targetWidth}px`;
+          wrapper.style.minWidth = `${targetWidth}px`;
+        }
+      });
+
+      if (ratio !== 1) {
+        previewContainer.scrollLeft = Math.max(0, contentX * ratio - focusX);
+        previewContainer.scrollTop = Math.max(0, contentY * ratio - focusY);
+      }
+
+      if (activeHighlightedIssue && typeof highlightPdfRegionForIssue === 'function') {
+        highlightPdfRegionForIssue(activeHighlightedIssue, false);
+      }
+    }
+
+    previewZoomOutBtn.addEventListener('click', () => applyPreviewZoom(previewZoom - ZOOM_STEP));
+    previewZoomInBtn.addEventListener('click', () => applyPreviewZoom(previewZoom + ZOOM_STEP));
+    previewZoomResetBtn.addEventListener('click', () => {
+      applyPreviewZoom(1.0);
+      previewContainer.scrollLeft = 0;
+    });
+
+    previewContainer.addEventListener('dblclick', () => {
+      if (!previewContainer.querySelector('canvas')) return;
+      applyPreviewZoom(1.0);
+      previewContainer.scrollLeft = 0;
+    });
+
+    previewContainer.addEventListener('wheel', (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (!previewContainer.querySelector('canvas')) return;
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      applyPreviewZoom(previewZoom + delta, e.clientX, e.clientY);
+    }, { passive: false });
+
+    previewContainer.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      if (!previewContainer.querySelector('canvas')) return;
+      isPreviewPanning = true;
+      panStartX = e.clientX;
+      panStartY = e.clientY;
+      panStartScrollLeft = previewContainer.scrollLeft;
+      panStartScrollTop = previewContainer.scrollTop;
+      previewContainer.classList.add('is-panning');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isPreviewPanning) return;
+      const dx = e.clientX - panStartX;
+      const dy = e.clientY - panStartY;
+      previewContainer.scrollLeft = panStartScrollLeft - dx;
+      previewContainer.scrollTop = panStartScrollTop - dy;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isPreviewPanning) return;
+      isPreviewPanning = false;
+      previewContainer.classList.remove('is-panning');
+    });
+
+    window.addEventListener('resize', () => {
+      if (previewContainer.querySelector('canvas')) {
+        applyPreviewZoom(previewZoom);
+      }
+    });
 
     function refreshQualityStatus() {
       correctionCountInfo.textContent = (qualityStats.unitFixes + qualityStats.quantityFixes + (qualityStats.itemFixes || 0)).toLocaleString();
@@ -499,6 +640,13 @@
       qualityStats = { unitFixes: 0, quantityFixes: 0, quantityReviews: 0 };
       validationIssues = [];
       validationIssueSequence = 0;
+      activeHighlightedIssue = null;
+      previewZoom = 1.0;
+      previewZoomLabel.textContent = '100%';
+      previewZoomOutBtn.disabled = true;
+      previewZoomInBtn.disabled = true;
+      previewZoomResetBtn.disabled = true;
+      previewContainer.classList.remove('can-pan', 'is-panning');
       renderValidationReview();
       refreshQualityStatus();
       updateCharCount();
@@ -590,7 +738,7 @@
           const ctx = canvas.getContext('2d');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
-          canvas.className = 'max-w-full h-auto rounded-lg shadow-2xl border border-slate-700 bg-white';
+          canvas.className = 'block w-full h-auto rounded-lg shadow-2xl border border-slate-700 bg-white';
 
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -614,10 +762,11 @@
           }
 
           const pageWrap = document.createElement('div');
-          pageWrap.className = 'relative inline-flex justify-center w-full';
+          pageWrap.className = 'relative mx-auto shrink-0';
           pageWrap.dataset.previewPage = String(pageNum);
           pageWrap.appendChild(canvas);
           previewContainer.appendChild(pageWrap);
+          applyPreviewZoom(previewZoom);
 
           if (useOCR) {
             const ocrCanvas = document.createElement('canvas');
@@ -1696,6 +1845,7 @@
     }
 
     function clearPdfHighlightBoxes() {
+      activeHighlightedIssue = null;
       previewContainer.querySelectorAll('.v22-locate-highlight').forEach(el => el.remove());
     }
 
@@ -1812,9 +1962,10 @@
       return unionBboxes(best.map(word => word.bbox));
     }
 
-    function highlightPdfRegionForIssue(issue) {
+    function highlightPdfRegionForIssue(issue, shouldScroll = true) {
       clearPdfHighlightBoxes();
       if (!issue) return;
+      activeHighlightedIssue = issue;
       const pageNum = Number(issue.page || 1);
       const canvases = previewContainer.querySelectorAll('canvas');
       if (!canvases.length) return;
@@ -1885,7 +2036,9 @@
       ].join(';');
       box.appendChild(tag);
       wrapper.appendChild(box);
-      box.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      if (shouldScroll) {
+        box.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+      }
     }
 
     function locateValidationIssue(issueId) {
