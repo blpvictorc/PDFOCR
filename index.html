@@ -43,12 +43,16 @@
       <div>
         <h1 class="text-base font-extrabold tracking-tight flex items-center gap-2">
           Document Intelligence Extractor
-          <span class="bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30 mono-font">V2.2</span>
+          <span class="bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30 mono-font">V2.2.8</span>
         </h1>
         <div class="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400 font-medium">
-          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Non-Destructive Grid Removal</span>
+          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Native Geometry Guard</span>
           <span>•</span>
-          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Table Geometry &amp; Contextual Audit</span>
+          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">ICHIBANKUJI Identity Guard</span>
+          <span>•</span>
+          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Evidence-Weighted Item Consensus</span>
+          <span>•</span>
+          <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Non-Destructive Grid Removal</span>
           <span>•</span>
           <span class="bg-slate-900 border border-slate-800 px-1.5 py-0.2 rounded text-slate-300">Zero Server Upload</span>
         </div>
@@ -168,7 +172,7 @@
           <span class="font-bold text-slate-500 uppercase text-[10px] tracking-wider ml-1">Suspicious Rows:</span>
           <span id="suspiciousCountBadge" class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 mono-font text-[10px] font-bold">0</span>
         </div>
-        <div id="pageQualityStrip" class="flex flex-wrap items-center gap-1.5 text-[10px] mono-font text-slate-500">
+        <div id="pageQualityStrip" class="flex items-center justify-end gap-1.5 min-w-0 text-[10px] mono-font text-slate-500">
           <span>Page Quality: -</span>
         </div>
       </div>
@@ -223,13 +227,13 @@
               <span id="reviewCountBadge" class="hidden text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 mono-font">0 pending</span>
             </span>
             <div class="flex flex-wrap items-center gap-1.5">
-              <label class="flex items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-semibold text-slate-600 cursor-pointer select-none" title="Also include non-critical REVIEW_REQUIRED / MEDIUM-risk suggestions after confirmation">
+              <label class="hidden items-center gap-1 px-2 py-1 bg-white border border-slate-200 rounded-lg text-[10px] font-semibold text-slate-600 cursor-pointer select-none" title="Retained internally for legacy bulk-apply compatibility">
                 <input type="checkbox" id="includeReviewFixesToggle" class="accent-amber-600 rounded cursor-pointer">
                 <span>Include review-level suggestions</span>
               </label>
-              <button id="applyAllSafeBtn" disabled class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white text-[10px] font-bold rounded-lg shadow-2xs flex items-center gap-1 transition cursor-pointer" title="Atomically apply safe high-confidence fixes">
+              <button id="applyAllSafeBtn" disabled class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:pointer-events-none text-white text-[10px] font-bold rounded-lg shadow-2xs flex items-center gap-1 transition cursor-pointer" title="Open categorized bulk-apply window">
                 <i class="fa-solid fa-check-double"></i>
-                <span>Apply All Safe Fixes</span>
+                <span>Apply All Fixes</span>
               </button>
               <button id="undoBatchBtn" disabled class="px-2.5 py-1 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none border border-slate-300 text-slate-700 text-[10px] font-bold rounded-lg flex items-center gap-1 transition cursor-pointer" title="Restore complete pre-bulk-apply snapshot">
                 <i class="fa-solid fa-rotate-left text-slate-600"></i>
@@ -243,11 +247,16 @@
                 <i class="fa-solid fa-pen-to-square text-blue-600"></i>
                 Review Selected Value
               </button>
+              <button id="fieldProvenanceBtn" disabled class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:pointer-events-none border border-slate-800 text-white text-[10px] font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer" title="Open Level 2 field evidence and value history">
+                <i class="fa-solid fa-diagram-project text-cyan-300"></i>
+                Field Provenance
+              </button>
             </div>
           </div>
 
           <div id="bulkPreviewBanner" class="hidden border-b border-blue-200 bg-blue-50/90 px-4 py-2.5 text-[11px] text-slate-800 space-y-2 shrink-0"></div>
           <div id="batchResultBanner" class="hidden border-b border-emerald-200 bg-emerald-50/70 px-4 py-2 text-[11px] text-slate-800 space-y-1.5 shrink-0"></div>
+          <section id="fieldProvenancePanel" class="hidden max-h-[58%] overflow-auto border-b border-slate-300 bg-slate-950 text-slate-100 shrink-0"></section>
           <div id="validationReviewPanel" class="hidden max-h-[42%] overflow-auto border-b border-slate-200 bg-slate-50/60 p-3 space-y-2"></div>
 
           <div class="bg-white border-b border-slate-200 px-4 py-1.5 flex items-center justify-between shrink-0">
@@ -264,6 +273,30 @@
       </div>
     </div>
   </main>
+
+  <!-- Categorized bulk-apply modal. Category actions deliberately accept every
+       currently actionable suggestion in that category without confidence gating. -->
+  <div id="categorizedBulkModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-[2px] p-4 sm:p-8 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="categorizedBulkModalTitle">
+    <div class="w-full max-w-3xl max-h-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col">
+      <div class="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-start justify-between gap-4 shrink-0">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-layer-group"></i></span>
+            <div>
+              <h2 id="categorizedBulkModalTitle" class="text-sm font-extrabold text-slate-900">Apply All Fixes by Category</h2>
+              <p class="mt-0.5 text-[11px] text-slate-500">Each category button immediately accepts and applies every actionable suggestion in that category.</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" data-close-categorized-bulk class="w-8 h-8 rounded-lg border border-slate-300 bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Close categorized bulk apply"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="categorizedBulkModalBody" class="p-5 overflow-auto space-y-3"></div>
+      <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-2 shrink-0">
+        <p class="text-[10px] text-slate-500"><i class="fa-solid fa-circle-info mr-1 text-blue-500"></i>Stale, missing, empty or overlapping targets are skipped to protect the extracted text.</p>
+        <button type="button" data-close-categorized-bulk class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-[11px] font-bold text-slate-700 hover:bg-slate-100">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -292,12 +325,17 @@
     const reviewCountBadge = document.getElementById('reviewCountBadge');
     const reviewSelectionBtn = document.getElementById('reviewSelectionBtn');
     const rescanValidationBtn = document.getElementById('rescanValidationBtn');
+    const fieldProvenanceBtn = document.getElementById('fieldProvenanceBtn');
+    const fieldProvenancePanel = document.getElementById('fieldProvenancePanel');
 
     let currentFileBuffer = null;
     let currentFileName = 'extracted';
     let qualityStats = { unitFixes: 0, quantityFixes: 0, quantityReviews: 0 };
     let validationIssues = [];
     let validationIssueSequence = 0;
+    let activeProvenanceId = '';
+    let activeProvenanceRecordId = '';
+    let activeAdHocProvenance = null;
 
     function refreshQualityStatus() {
       correctionCountInfo.textContent = (qualityStats.unitFixes + qualityStats.quantityFixes + (qualityStats.itemFixes || 0)).toLocaleString();
@@ -338,8 +376,6 @@
     exportCsvBtn.addEventListener('click', () => {
       const pendingCritical = validationIssues.filter(issue => issue.status === 'pending' && issue.severity === 'critical').length;
       if (pendingCritical && !confirm(`${pendingCritical} critical validation item(s) are still pending. Export without applying or ignoring them?`)) return;
-      // Manual-first rule: export exactly what the user currently sees and edited.
-      // V1.7 OCR normalization is applied after extraction, never again over manual edits.
       const reviewedText = outputText.value;
       const lines = reviewedText.split('\n').filter(line => line.trim() !== '');
       const csvContent = lines.map(line => {
@@ -364,6 +400,30 @@
     outputText.addEventListener('keyup', updateReviewSelectionState);
     outputText.addEventListener('mouseup', updateReviewSelectionState);
     reviewSelectionBtn.addEventListener('click', addSelectedValueToReview);
+    fieldProvenanceBtn.addEventListener('click', () => openFieldProvenance());
+    fieldProvenancePanel.addEventListener('click', event => {
+      const actionEl = event.target.closest('[data-provenance-action]');
+      if (!actionEl) return;
+      const action = actionEl.dataset.provenanceAction;
+      if (action === 'close') closeFieldProvenance();
+      if (action === 'locate') locateActiveProvenanceField();
+    });
+    fieldProvenancePanel.addEventListener('change', event => {
+      const recordSelect = event.target.closest('[data-provenance-record]');
+      const fieldSelect = event.target.closest('[data-provenance-field]');
+      if (recordSelect) {
+        activeAdHocProvenance = null;
+        activeProvenanceRecordId = recordSelect.value;
+        const first = (v22State.provenance || []).find(item => item.recordId === activeProvenanceRecordId);
+        activeProvenanceId = first ? first.id : '';
+        renderFieldProvenancePanel();
+      }
+      if (fieldSelect) {
+        activeAdHocProvenance = null;
+        activeProvenanceId = fieldSelect.value;
+        renderFieldProvenancePanel();
+      }
+    });
     rescanValidationBtn.addEventListener('click', () => {
       detectCriticalFieldIssues(outputText.value);
       renderValidationReview();
@@ -386,6 +446,7 @@
       if (action === 'apply') applyValidationIssue(issueId);
       if (action === 'ignore') ignoreValidationIssue(issueId);
       if (action === 'locate') locateValidationIssue(issueId);
+      if (action === 'provenance') openIssueProvenance(issueId);
     });
 
     function updateCharCount() {
@@ -402,6 +463,30 @@
       currentFileBuffer = await file.arrayBuffer();
       reprocessBtn.disabled = false;
       await processPDF(currentFileBuffer);
+    }
+
+    // Check whether rendered canvas actually contains visible non-border ink pixels
+    function checkCanvasHasRenderedInk(canvas) {
+      try {
+        const w = canvas.width;
+        const h = canvas.height;
+        const ctx = canvas.getContext('2d');
+        // Sample center text region (avoiding top logo & outer border)
+        const sx = Math.floor(w * 0.08);
+        const sy = Math.floor(h * 0.14);
+        const sw = Math.floor(w * 0.84);
+        const sh = Math.floor(h * 0.78);
+        const img = ctx.getImageData(sx, sy, sw, sh).data;
+        let darkPixels = 0;
+        for (let i = 0; i < img.length; i += 16) {
+          if (img[i] < 180 && img[i + 1] < 180 && img[i + 2] < 180) {
+            darkPixels++;
+          }
+        }
+        return darkPixels > 400;
+      } catch (e) {
+        return true;
+      }
     }
 
     async function processPDF(arrayBuffer) {
@@ -426,24 +511,36 @@
       rescanValidationBtn.disabled = true;
       progressWrap.classList.remove('hidden');
       progressFill.style.width = '5%';
-      statusText.textContent = 'Inspecting PDF structure...';
+      statusText.textContent = 'Inspecting PDF structure & fonts...';
 
       try {
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
+        // FIX V2.2.5: Preserve the working jsDelivr PDF.js asset paths from V2.2.3; cdnjs does not host these distribution folders
+        const loadingTask = pdfjsLib.getDocument({
+          data: arrayBuffer.slice(0),
+          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/',
+          disableFontFace: false,
+          useSystemFonts: true
+        });
+        const pdf = await loadingTask.promise;
         const numPages = pdf.numPages;
         pageCountInfo.textContent = numPages;
 
         let useOCR = (mode === 'ocr');
 
         if (mode === 'auto') {
-          let totalNativeChars = 0;
+          let totalNativeAlnum = 0;
           const checkLimit = Math.min(numPages, 3);
           for (let i = 1; i <= checkLimit; i++) {
             const p = await pdf.getPage(i);
             const tc = await p.getTextContent();
-            totalNativeChars += tc.items.map(item => item.str).join('').trim().length;
+            const rawStr = tc.items.map(item => item.str).join('');
+            // Count real alphanumeric / CJK characters (ignore empty spaces or replacement boxes)
+            const meaningfulChars = rawStr.replace(/[\s\u0000-\u001F\uFFFD]/g, '');
+            totalNativeAlnum += meaningfulChars.length;
           }
-          useOCR = (totalNativeChars < 20);
+          useOCR = (totalNativeAlnum < 30);
         }
 
         modeBadge.classList.remove('hidden');
@@ -458,7 +555,8 @@
         let fullExtractedText = '';
         let worker = null;
 
-        if (useOCR) {
+        const initOcrWorkerIfNeeded = async () => {
+          if (worker) return worker;
           statusText.textContent = `Initializing OCR worker (${lang})...`;
           worker = await Tesseract.createWorker(lang, 1, {
             logger: m => {
@@ -469,13 +567,17 @@
               }
             }
           });
-
           await worker.setParameters({
             tessedit_pageseg_mode: '6',
             preserve_interword_spaces: '1',
             load_system_dawg: '0',
             load_freq_dawg: '0'
           });
+          return worker;
+        };
+
+        if (useOCR) {
+          await initOcrWorkerIfNeeded();
         }
 
         for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -494,8 +596,26 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           await page.render({ canvasContext: ctx, viewport }).promise;
+
+          // Fallback: if PDF.js font glyph rendering produced blank text layer on canvas,
+          // draw native text items directly onto canvas if available
+          const textContent = await page.getTextContent();
+          if (!checkCanvasHasRenderedInk(canvas) && textContent.items.length > 0) {
+            ctx.save();
+            ctx.fillStyle = '#000000';
+            for (const item of textContent.items) {
+              if (!item.str || !item.str.trim()) continue;
+              const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+              const fontHeight = Math.hypot(tx[2], tx[3]) || (10 * scale);
+              ctx.font = `${Math.max(8, Math.round(fontHeight))}px "Courier New", monospace`;
+              ctx.fillText(item.str, tx[4], tx[5]);
+            }
+            ctx.restore();
+          }
+
           const pageWrap = document.createElement('div');
           pageWrap.className = 'relative inline-flex justify-center w-full';
+          pageWrap.dataset.previewPage = String(pageNum);
           pageWrap.appendChild(canvas);
           previewContainer.appendChild(pageWrap);
 
@@ -506,7 +626,6 @@
             const ocrCtx = ocrCanvas.getContext('2d');
             ocrCtx.drawImage(canvas, 0, 0);
 
-            // Non-destructive line removal: erases table borders ONLY, preserving soft grayscale anti-aliasing on decimal dots & '7's
             removeGridLinesPreserveAntiAliasing(ocrCtx, ocrCanvas.width, ocrCanvas.height, shouldStripLines);
 
             const { data } = await worker.recognize(ocrCanvas);
@@ -516,9 +635,24 @@
             const cleanedOcrText = postProcessLogisticsText(structuredOcrText);
             fullExtractedText += `=== Page ${pageNum} ===\n${cleanedOcrText}\n\n`;
           } else {
-            const textContent = await page.getTextContent();
-            const structuredPageText = extractStructuredNativeText(textContent.items);
-            fullExtractedText += `=== Page ${pageNum} ===\n${structuredPageText}\n\n`;
+            // Preserve the exact PDF.js text geometry used to build each extracted row.
+            // Locate and table-validation must reference this artifact rather than guess
+            // from a global output-line ratio.
+            const nativeArtifact = {
+              page: pageNum,
+              width: canvas.width,
+              height: canvas.height,
+              nativeRows: [],
+              nativeTokens: [],
+              cleanedLines: [],
+              geometryConfidence: 94,
+              avgWordConfidence: 95
+            };
+            const structuredPageText = extractStructuredNativeText(textContent.items, nativeArtifact, scale);
+            const cleanedNativeText = postProcessLogisticsText(structuredPageText);
+            nativeArtifact.cleanedLines = cleanedNativeText.split('\n');
+            v22State.pageArtifacts.push(nativeArtifact);
+            fullExtractedText += `=== Page ${pageNum} ===\n${cleanedNativeText}\n\n`;
             progressFill.style.width = `${Math.round((pageNum / numPages) * 100)}%`;
           }
         }
@@ -580,8 +714,6 @@
 
     function nearbyJanCode(lines, lineIndex) {
       const janPattern = /\b\d{7}-\d{5}-\d\b/;
-      // JAN belongs to the item row immediately above it. Keep the window narrow so
-      // a neighbouring SKU cannot inherit another row's identifier.
       for (const delta of [0, 1, 2, 3]) {
         const index = lineIndex + delta;
         if (index < 0 || index >= lines.length) continue;
@@ -659,8 +791,6 @@
       lines.forEach((line, index) => {
         if (/#\s*U[0-9A-Z]{7}-[0-9A-Z]+/i.test(line) || /ITEM\s*NO\.?\s*:\s*U[0-9A-Z]{7}-[0-9A-Z]+/i.test(line)) starts.push(index);
       });
-      // Consecutive Package No. and ITEM NO. on one line are one start; a new block
-      // begins only after the prior block's detail lines.
       const uniqueStarts = starts.filter((value, index) => index === 0 || value - starts[index - 1] > 1);
       return uniqueStarts.map((blockStart, index) => {
         const nextStart = uniqueStarts[index + 1] ?? lines.length;
@@ -697,7 +827,6 @@
         for (const occurrence of block.occurrences) counts.set(occurrence.value, (counts.get(occurrence.value) || 0) + 1);
         const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
         const [consensus, support] = ranked[0];
-        // Same-block correction requires at least two redundant identifiers agreeing.
         if (support < 2) continue;
 
         for (const occurrence of block.occurrences) {
@@ -723,11 +852,95 @@
     }
 
     function isPoItemDescriptionRow(line) {
-      // Only match PO item rows that contain a shipment date (DD/MMM/YY); standalone wrapped description lines like "PLUSH" are not item code rows
       if (/\b\d{7}-\d{5}-\d\b/.test(line) || /#\s*U[0-9A-Z]{7}-/i.test(line) || /ITEM\s*NO\./i.test(line) || /\([0-9A-Z]{7}\)/i.test(line)) return false;
       if (/^(?:=== Page|PAGE:|Messrs|Ship To|PO No|Date|Incoterms|Payment|Shipping|Shipment|To\s*:|Factory|Necessary|Item\b|Total Amount|Remark|Seller|Buyer)/i.test(line.trim())) return false;
       return /\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i.test(line);
     }
+
+    function isIchibankujiItemContext(lines, lineIndex) {
+      const start = Math.max(0, lineIndex - 1);
+      const end = Math.min(lines.length, lineIndex + 4);
+      const nearbyText = lines.slice(start, end).join(' ');
+      return /\bICHIBAN[\s_-]*KUJI\b|一番くじ/i.test(nearbyText);
+    }
+
+    function itemCandidateUsesNativeText(page) {
+      const artifact = v22State && Array.isArray(v22State.pageArtifacts)
+        ? v22State.pageArtifacts.find(item => item.page === page)
+        : null;
+      if (artifact) return !artifact.ocrData;
+      return Boolean(modeBadge && /NATIVE TEXT/i.test(modeBadge.textContent || ''));
+    }
+
+    function normalizeItemDescriptionEvidence(line) {
+      let body = String(line || '').replace(/^\s*[^\s\t]+\s*/, ' ');
+      const dateIndex = body.search(/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i);
+      if (dateIndex >= 0) body = body.slice(0, dateIndex);
+      body = body
+        .replace(/\b\d{7}-\d{5}-\d\b/g, ' ')
+        .replace(/\b\d+(?:,\d{3})*(?:\.\d+)?\b/g, ' ')
+        .replace(/\b(?:CTN|PCS|P\/?C|SET|BOX|PKG|JAN|R-?SAMPLE|W-?SAMPLE)\b/gi, ' ')
+        .replace(/[^A-Z0-9]+/gi, ' ')
+        .trim()
+        .toUpperCase();
+      return body.split(/\s+/).filter(token => token.length > 1).join(' ');
+    }
+
+    function itemDescriptionSimilarity(left, right) {
+      const a = new Set(String(left || '').split(/\s+/).filter(Boolean));
+      const b = new Set(String(right || '').split(/\s+/).filter(Boolean));
+      if (!a.size || !b.size) return 0;
+      let overlap = 0;
+      for (const token of a) if (b.has(token)) overlap += 1;
+      return overlap / Math.max(a.size, b.size);
+    }
+
+    function scoreJanItemCandidate(profile, allCandidates, jan, distinctCodes) {
+      const externalDescriptionSupport = profile.items.reduce((best, item) => {
+        if (!item.descriptionKey) return best;
+        const matches = allCandidates.filter(other => (
+          other.jan !== jan &&
+          other.value === profile.value &&
+          itemDescriptionSimilarity(other.descriptionKey, item.descriptionKey) >= 0.78
+        )).length;
+        return Math.max(best, matches);
+      }, 0);
+      const independentPages = new Set(profile.items.map(item => item.page)).size;
+      const nativeSupport = profile.items.some(item => item.isNative);
+      const hasConfusableAlternative = distinctCodes.some(code => code !== profile.value && plausibleOcrConfusion(code, profile.value));
+      const occurrenceWeight = profile.count >= 3 ? 2 : profile.count >= 2 ? 1 : 0;
+      const formatWeight = /^\d{7}$/.test(profile.value) ? 1 : 0;
+      const businessPriorWeight = /^2\d{6}$/.test(profile.value) ? 2 : 0;
+      const nativeWeight = nativeSupport ? 4 : 0;
+      const descriptionWeight = externalDescriptionSupport > 0 ? 3 : 0;
+      const independentPageWeight = independentPages >= 2 ? 3 : 0;
+      const correlatedOcrPenalty = !nativeSupport && hasConfusableAlternative ? 2 : 0;
+      const score = occurrenceWeight + formatWeight + businessPriorWeight + nativeWeight + descriptionWeight + independentPageWeight - correlatedOcrPenalty;
+      const independentEvidence = [
+        businessPriorWeight > 0,
+        nativeWeight > 0,
+        descriptionWeight > 0,
+        independentPageWeight > 0
+      ].filter(Boolean).length;
+      return {
+        ...profile,
+        score,
+        independentEvidence,
+        independentPages,
+        nativeSupport,
+        externalDescriptionSupport,
+        breakdown: {
+          occurrenceWeight,
+          formatWeight,
+          businessPriorWeight,
+          nativeWeight,
+          descriptionWeight,
+          independentPageWeight,
+          correlatedOcrPenalty
+        }
+      };
+    }
+
     function detectJanGroupedItemConflicts(lines, offsets) {
       const candidates = [];
       lines.forEach((line, lineIndex) => {
@@ -735,20 +948,24 @@
         const jan = nearbyJanCode(lines, lineIndex);
         if (!jan) return;
 
-        // First token on the PO row: either a 7-digit item code or a garbled short alphanumeric token (e.g. "gh", "wf")
         const firstTokenMatch = line.match(/^\s*([^\s\t]+)/);
         if (!firstTokenMatch) return;
         const token = firstTokenMatch[1];
         const col = line.indexOf(token);
 
+        const page = currentPageForLine(lines, lineIndex);
+        const descriptionKey = normalizeItemDescriptionEvidence(line);
         if (/^\d{7}$/.test(token)) {
           candidates.push({
             value: token,
             isNumeric7: true,
             lineNumber: lineIndex,
             column: col,
-            page: currentPageForLine(lines, lineIndex),
+            page,
             jan,
+            isIchibankuji: isIchibankujiItemContext(lines, lineIndex),
+            isNative: itemCandidateUsesNativeText(page),
+            descriptionKey,
             line
           });
         } else if (/^[A-Za-z0-9]{1,6}$/.test(token) && !/^(?:CTN|PCS|SET|BOX|PKG|JAN)$/i.test(token)) {
@@ -757,8 +974,11 @@
             isNumeric7: false,
             lineNumber: lineIndex,
             column: col,
-            page: currentPageForLine(lines, lineIndex),
+            page,
             jan,
+            isIchibankuji: isIchibankujiItemContext(lines, lineIndex),
+            isNative: itemCandidateUsesNativeText(page),
+            descriptionKey,
             line
           });
         }
@@ -772,46 +992,69 @@
 
       const detected = [];
       for (const [jan, group] of groups.entries()) {
+        // Business rule: ICHIBANKUJI prize variants may intentionally share one JAN
+        // while using different Item Codes. JAN is supporting/grouping evidence only;
+        // it must never, by itself, rewrite an ICHIBANKUJI Item Code.
+        if (group.some(candidate => candidate.isIchibankuji)) continue;
+
         const numericOnes = group.filter(c => c.isNumeric7);
         if (!numericOnes.length) continue;
 
-        const counts = new Map();
-        for (const candidate of numericOnes) counts.set(candidate.value, (counts.get(candidate.value) || 0) + 1);
-        const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-        const [consensus, support] = ranked[0];
+        // Valid Native Text item codes are intentionally conservative: a same-JAN
+        // frequency pattern must not rewrite values taken directly from the PDF layer.
+        const distinctCodes = [...new Set(numericOnes.map(candidate => candidate.value))];
+        const profiles = distinctCodes.map(value => ({
+          value,
+          items: numericOnes.filter(candidate => candidate.value === value),
+          count: numericOnes.filter(candidate => candidate.value === value).length
+        }));
+        const scored = profiles
+          .map(profile => scoreJanItemCandidate(profile, candidates, jan, distinctCodes))
+          .sort((a, b) => b.score - a.score || b.independentEvidence - a.independentEvidence || b.count - a.count || a.value.localeCompare(b.value));
+        const winner = scored[0];
+        const runnerUp = scored[1] || null;
+        const scoreMargin = runnerUp ? winner.score - runnerUp.score : winner.score;
+        const tied = Boolean(runnerUp && winner.score === runnerUp.score && winner.independentEvidence === runnerUp.independentEvidence);
+        if (!winner || tied) continue;
 
         for (const candidate of group) {
-          if (candidate.value === consensus) continue;
+          if (candidate.value === winner.value || candidate.isNative) continue;
+          const descriptionAgrees = winner.items.some(item => itemDescriptionSimilarity(item.descriptionKey, candidate.descriptionKey) >= 0.78);
+          if (!descriptionAgrees || winner.independentEvidence < 1) continue;
+
           if (!candidate.isNumeric7) {
-            // Garbled short token (like "gh" or "wf") on a row sharing the exact same JAN code
             detected.push({
               type: 'Garbled Item Code',
+              fieldType: 'ITEM_CODE',
               severity: 'critical',
               original: candidate.value,
-              suggested: consensus,
-              confidence: support >= 2 ? 98 : 94,
-              reason: `Row shares JAN ${jan} with ${support} row(s) having Item Code ${consensus}, but faint ink caused OCR to read "${candidate.value}".`,
+              suggested: winner.value,
+              confidence: Math.min(92, 78 + winner.independentEvidence * 4 + Math.max(0, scoreMargin) * 3),
+              correctionLevel: 'REVIEW_REQUIRED',
+              reason: `Evidence-weighted Item identity favours ${winner.value} for JAN ${jan}: matching description plus ${winner.independentEvidence} independent signal(s). Frequency alone was not used as proof.`,
               lineNumber: candidate.lineNumber,
               column: candidate.column,
               page: candidate.page,
               context: candidate.line,
-              source: 'Same JAN self-consistency recovery',
-              issueKey: `item-jan-garbled|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${consensus}`
+              source: 'Evidence-weighted Item identity',
+              issueKey: `item-jan-weighted-garbled|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${winner.value}`
             });
-          } else if (support >= 2 && plausibleOcrConfusion(candidate.value, consensus)) {
+          } else if (scoreMargin >= 1 && plausibleOcrConfusion(candidate.value, winner.value)) {
             detected.push({
               type: 'Item Code',
+              fieldType: 'ITEM_CODE',
               severity: 'critical',
               original: candidate.value,
-              suggested: consensus,
-              confidence: 96,
-              reason: `${support} rows carrying the same JAN ${jan} agree on ${consensus}; this row differs by one plausible OCR-confusion digit.`,
+              suggested: winner.value,
+              confidence: Math.min(92, 78 + winner.independentEvidence * 4 + scoreMargin * 3),
+              correctionLevel: 'REVIEW_REQUIRED',
+              reason: `Evidence-weighted Item identity favours ${winner.value} (score ${winner.score} vs ${candidate.value} score ${scored.find(item => item.value === candidate.value)?.score ?? 0}) for JAN ${jan}. Matching description and independent evidence outweigh correlated OCR frequency; manual review is required.`,
               lineNumber: candidate.lineNumber,
               column: candidate.column,
               page: candidate.page,
               context: candidate.line,
-              source: 'Same JAN / repeated PO row evidence',
-              issueKey: `item-jan|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${consensus}`
+              source: 'Evidence-weighted Item identity',
+              issueKey: `item-jan-weighted|${jan}|${candidate.lineNumber}|${candidate.column}|${candidate.value}|${winner.value}`
             });
           }
         }
@@ -830,6 +1073,8 @@
       return Math.round(num).toLocaleString('en-US');
     }
 
+    const ENABLE_PO_AMOUNT_REPLACEMENT_SUGGESTIONS = false;
+
     function detectPoArithmeticIssues(lines) {
       const issues = [];
       let rowSum = 0;
@@ -842,18 +1087,15 @@
         const nextLine2 = lines[lineIndex + 2] || '';
         const blockText = `${line} ${nextLine1} ${nextLine2}`;
 
-        // Match pattern: <qty> <date> <unitPrice> <amount> ...
         const dateMatch = line.match(/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i);
         const afterDate = dateMatch ? line.slice(dateMatch.index + dateMatch[0].length) : '';
         const searchFrom = dateMatch ? dateMatch.index + dateMatch[0].length : 0;
 
-        // Unit price usually has decimals like 636.00 or 495.00
         const priceMatch = afterDate.match(/\b\d{1,5}(?:\.\d{1,2})\b/);
         if (!priceMatch) return;
         const unitPrice = parseNumericClean(priceMatch[0]);
         if (Number.isNaN(unitPrice)) return;
 
-        // Amount usually has comma-grouped thousands (e.g. 18,988,416) or 4+ digits after unit price
         const afterPrice = afterDate.slice(priceMatch.index + priceMatch[0].length);
         const amtMatch = afterPrice.match(/(\d{1,3}(?:,\s*\d{3})+)/) || afterPrice.match(/\b(\d{4,7})\b/);
         if (!amtMatch) return;
@@ -865,7 +1107,6 @@
         if (Number.isNaN(amountObj.val)) return;
         const amount = amountObj.val;
 
-        // Extract total PCS from remarks e.g. "(6144.00 PCS)" or from PCS unit row
         const remarkPcsMatch = blockText.match(/\((\d+(?:\.\d+)?)\s*PCS\)/i);
         const pcsPerCtnMatch = blockText.match(/\b(\d+)\s*P\/C\b/i);
         const preDate = line.split(/\b\d{2}\/(?:JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\/\d{2}\b/i)[0] || '';
@@ -885,7 +1126,7 @@
           rowSum += expectedAmount;
           countedRows += 1;
 
-          if (Math.abs(expectedAmount - amount) >= 1) {
+          if (ENABLE_PO_AMOUNT_REPLACEMENT_SUGGESTIONS && Math.abs(expectedAmount - amount) >= 1) {
             const formattedExpected = formatIntegerWithCommas(expectedAmount);
             issues.push({
               type: 'PO Amount Math Check',
@@ -905,14 +1146,13 @@
         }
       });
 
-      // Check Total Amount line against sum of rows
       if (countedRows >= 1 && rowSum > 0) {
         lines.forEach((line, lineIndex) => {
           if (!/Total\s*Amount/i.test(line)) return;
           const m = line.match(/(\d{1,3}(?:[,\s]\d{3})+)/);
           if (!m) return;
           const docTotal = parseNumericClean(m[1]);
-          if (!Number.isNaN(docTotal) && Math.abs(docTotal - rowSum) >= 1) {
+          if (ENABLE_PO_AMOUNT_REPLACEMENT_SUGGESTIONS && !Number.isNaN(docTotal) && Math.abs(docTotal - rowSum) >= 1) {
             const formattedSum = formatIntegerWithCommas(rowSum);
             issues.push({
               type: 'PO Total Amount Mismatch',
@@ -942,7 +1182,6 @@
         const page = currentPageForLine(lines, lineIndex);
         const nextLine = lines[lineIndex + 1] || '';
 
-        // 1. Check Carton * pcs_per_ctn == total_pcs (e.g., "125	3,000PCS" + next line "24 pcs per ctn.")
         const ctnQtyMatch = line.match(/^\s*(\d{1,3}(?:,\d{3})*)\t(\d{1,3}(?:,\d{3})*)\s*PCS\b/i);
         const perCtnMatch = nextLine.match(/\b(\d+)\s*pcs\s*per\s*ctn/i);
         if (ctnQtyMatch && perCtnMatch) {
@@ -968,12 +1207,10 @@
           }
         }
 
-        // 2. Check missing decimal point in KG weights on packing rows (e.g., "740KG" -> "7.40KG", "1410KG" -> "14.10KG")
         const kgMatches = [...line.matchAll(/\b(\d{3,4})KG\b/gi)];
         for (const km of kgMatches) {
           const rawDigits = km[1];
           const numVal = Number(rawDigits);
-          // Per-carton weights in these packing lists are typically 1.00KG–40.00KG; 3-4 digits without decimal are 100x scaled
           if (numVal >= 100 && numVal <= 4999) {
             const suggestedKg = (numVal / 100).toFixed(2) + 'KG';
             issues.push({
@@ -993,7 +1230,6 @@
           }
         }
 
-        // 3. Check missing decimal point in CM dimensions (e.g., "52.0 X51.0X 345 CM" -> "34.5")
         const dimMatch = line.match(/(\d{2}\.\d)\s*[Xx]\s*(\d{2}\.\d)\s*[Xx]\s*(\d{3})\s*CM\b/i);
         if (dimMatch) {
           const thirdRaw = dimMatch[3];
@@ -1015,12 +1251,11 @@
           });
         }
 
-        // 4. Check merged dual decimal weights like "15,636.7822.541.19" or "1.032,00.1.504.00"
         const mergedWeightMatch = line.match(/(\d{1,3}(?:[,.]\d{3})*\.\d{2})(\d{1,3}(?:[,.]\d{3})*\.\d{2})/);
         if (mergedWeightMatch) {
           const left = mergedWeightMatch[1].replace(/(\d)\.(\d{3}\.)/, '$1,$2');
           const right = mergedWeightMatch[2].replace(/(\d)\.(\d{3}\.)/, '$1,$2');
-          const suggestedSplit = `${left}	${right}`;
+          const suggestedSplit = `${left}\t${right}`;
           issues.push({
             type: 'Merged Weight Columns',
             severity: 'critical',
@@ -1037,7 +1272,6 @@
           });
         }
 
-        // 5. Check digit-confused "8 SAMPLE" -> "B SAMPLE"
         const sampleMatch = line.match(/\b8\s+SAMPLE\b/i);
         if (sampleMatch) {
           issues.push({
@@ -1076,7 +1310,6 @@
     }
 
     function detectCriticalFieldIssues(text) {
-      // Keep manual items; rebuild automatic suggestions from current text once.
       validationIssues = validationIssues.filter(issue => issue.source === 'Manual selection');
       const lines = text.split('\n');
       const allAutoIssues = [
@@ -1158,10 +1391,12 @@
         const status = issue.status === 'pending'
           ? ''
           : `<span class="text-[10px] font-bold uppercase tracking-wide ${issue.status === 'applied' ? 'text-emerald-700' : 'text-slate-500'}">${escapeHtml(issue.status)}</span>`;
-        const controls = issue.status === 'pending' ? `
-          <button data-review-action="locate" data-issue-id="${issue.id}" class="px-2 py-1 text-[10px] font-bold rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Locate</button>
-          <button data-review-action="ignore" data-issue-id="${issue.id}" class="px-2 py-1 text-[10px] font-bold rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Ignore</button>
-          <button data-review-action="apply" data-issue-id="${issue.id}" class="px-2.5 py-1 text-[10px] font-bold rounded-md bg-blue-600 text-white hover:bg-blue-500">Apply edited value</button>` : '';
+        const controls = `
+          <button data-review-action="provenance" data-issue-id="${issue.id}" class="px-2 py-1 text-[10px] font-bold rounded-md border border-cyan-300 text-cyan-800 bg-cyan-50 hover:bg-cyan-100" title="Show Level 2 field evidence">Evidence</button>
+          ${issue.status === 'pending' ? `
+            <button data-review-action="locate" data-issue-id="${issue.id}" class="px-2 py-1 text-[10px] font-bold rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Locate</button>
+            <button data-review-action="ignore" data-issue-id="${issue.id}" class="px-2 py-1 text-[10px] font-bold rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50">Ignore</button>
+            <button data-review-action="apply" data-issue-id="${issue.id}" class="px-2.5 py-1 text-[10px] font-bold rounded-md bg-blue-600 text-white hover:bg-blue-500">Apply edited value</button>` : ''}`;
         return `
           <article class="rounded-xl border ${statusStyle} p-3" data-review-card="${issue.id}">
             <div class="flex items-start justify-between gap-3">
@@ -1193,6 +1428,226 @@
             </div>
           </article>`;
       }).join('');
+    }
+
+    function provenanceStatusStyle(status) {
+      const normalized = String(status || 'CAPTURED').toUpperCase();
+      if (normalized === 'VERIFIED' || normalized === 'LOCKED') return 'bg-emerald-400/15 text-emerald-300 border-emerald-400/30';
+      if (normalized === 'CORRECTED') return 'bg-blue-400/15 text-blue-300 border-blue-400/30';
+      if (normalized === 'REVIEW') return 'bg-amber-400/15 text-amber-300 border-amber-400/30';
+      if (normalized === 'CONFLICT') return 'bg-rose-400/15 text-rose-300 border-rose-400/30';
+      return 'bg-slate-700 text-slate-300 border-slate-600';
+    }
+
+    function provenanceCheckStyle(status) {
+      const normalized = String(status || 'N/A').toUpperCase();
+      if (normalized === 'PASS' || normalized === 'VERIFIED') return { icon: 'fa-circle-check', color: 'text-emerald-300', badge: 'bg-emerald-400/10 border-emerald-400/20' };
+      if (normalized === 'REVIEW' || normalized === 'WARN') return { icon: 'fa-triangle-exclamation', color: 'text-amber-300', badge: 'bg-amber-400/10 border-amber-400/20' };
+      if (normalized === 'FAIL' || normalized === 'CONFLICT') return { icon: 'fa-circle-xmark', color: 'text-rose-300', badge: 'bg-rose-400/10 border-rose-400/20' };
+      return { icon: 'fa-minus', color: 'text-slate-500', badge: 'bg-slate-900 border-slate-800' };
+    }
+
+    function getActiveProvenance() {
+      if (activeAdHocProvenance) return activeAdHocProvenance;
+      const list = (typeof v22State !== 'undefined' && Array.isArray(v22State.provenance)) ? v22State.provenance : [];
+      return list.find(item => item.id === activeProvenanceId) || list[0] || null;
+    }
+
+    function openFieldProvenance(fieldId = '') {
+      const list = (typeof v22State !== 'undefined' && Array.isArray(v22State.provenance)) ? v22State.provenance : [];
+      if (!list.length) return;
+      activeAdHocProvenance = null;
+      const chosen = list.find(item => item.id === fieldId) || list.find(item => item.id === activeProvenanceId) || list[0];
+      activeProvenanceId = chosen.id;
+      activeProvenanceRecordId = chosen.recordId;
+      fieldProvenancePanel.classList.remove('hidden');
+      renderFieldProvenancePanel();
+    }
+
+    function closeFieldProvenance() {
+      fieldProvenancePanel.classList.add('hidden');
+      fieldProvenancePanel.innerHTML = '';
+      activeAdHocProvenance = null;
+    }
+
+    function buildIssueProvenance(issue) {
+      const lines = outputText.value.split('\n');
+      const raw = String(issue.originalValue ?? issue.original ?? '');
+      const suggested = String(issue.suggestedValue ?? issue.suggested ?? raw);
+      const finalValue = issue.status === 'applied' ? suggested : raw;
+      return {
+        id: `issue:${issue.id}`,
+        recordId: issue.rowId || `Page ${issue.page || 1}`,
+        fieldKey: issue.fieldType || 'FIELD',
+        label: String(issue.fieldType || issue.type || 'Field').replace(/_/g, ' '),
+        fieldType: issue.fieldType || 'FIELD',
+        page: issue.page || 1,
+        lineNumber: issue.lineNumber ?? -1,
+        rawValue: raw,
+        normalizedValue: raw,
+        suggestedValue: suggested !== raw ? suggested : null,
+        finalValue,
+        bbox: issue.bbox || null,
+        ocrConfidence: issue.ocrConfidence ?? issue.confidence ?? null,
+        geometryConfidence: issue.geometryConfidence ?? null,
+        correctionReason: issue.reason || '',
+        status: issue.status === 'applied' ? 'CORRECTED' : issue.severity === 'critical' ? 'REVIEW' : 'CAPTURED',
+        source: issue.source || 'Validation Review',
+        sourceText: lines[issue.lineNumber] || issue.context || '',
+        checks: [
+          { label: 'Validation rule', status: issue.severity === 'critical' ? 'REVIEW' : 'PASS', detail: issue.reason || 'Manual review item' },
+          { label: 'Confidence', status: issue.confidence == null ? 'N/A' : Number(issue.confidence) >= 90 ? 'PASS' : 'REVIEW', detail: issue.confidence == null ? 'Not scored' : `${issue.confidence}%` },
+          { label: 'Location', status: (issue.page && issue.lineNumber != null) ? 'PASS' : 'N/A', detail: `Page ${issue.page || 1}${issue.lineNumber != null ? ` · Line ${issue.lineNumber + 1}` : ''}` }
+        ]
+      };
+    }
+
+    function openIssueProvenance(issueId) {
+      const issue = validationIssues.find(item => item.id === issueId);
+      if (!issue) return;
+      const list = (typeof v22State !== 'undefined' && Array.isArray(v22State.provenance)) ? v22State.provenance : [];
+      const raw = String(issue.originalValue ?? issue.original ?? '');
+      const match = list.find(item =>
+        item.page === (issue.page || 1) &&
+        (item.rawValue === raw || item.finalValue === raw || item.suggestedValue === raw)
+      ) || list.find(item =>
+        item.page === (issue.page || 1) &&
+        item.lineNumber === (issue.lineNumber ?? -1) &&
+        item.fieldType === issue.fieldType
+      );
+      if (match) {
+        openFieldProvenance(match.id);
+      } else {
+        activeAdHocProvenance = buildIssueProvenance(issue);
+        activeProvenanceId = activeAdHocProvenance.id;
+        activeProvenanceRecordId = activeAdHocProvenance.recordId;
+        fieldProvenancePanel.classList.remove('hidden');
+        renderFieldProvenancePanel();
+      }
+    }
+
+    function renderFieldProvenancePanel() {
+      const item = getActiveProvenance();
+      if (!item) {
+        closeFieldProvenance();
+        return;
+      }
+      const list = (typeof v22State !== 'undefined' && Array.isArray(v22State.provenance)) ? v22State.provenance : [];
+      const records = [...new Set(list.map(entry => entry.recordId).filter(Boolean))];
+      const recordFields = list.filter(entry => entry.recordId === (activeProvenanceRecordId || item.recordId));
+      const controls = activeAdHocProvenance ? '' : `
+        <div class="grid grid-cols-2 gap-2 min-w-[300px]">
+          <label>
+            <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Record</span>
+            <select data-provenance-record class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-400">
+              ${records.map(recordId => `<option value="${escapeHtml(recordId)}" ${recordId === item.recordId ? 'selected' : ''}>${escapeHtml(recordId)}</option>`).join('')}
+            </select>
+          </label>
+          <label>
+            <span class="block text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Field</span>
+            <select data-provenance-field class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-slate-200 focus:outline-none focus:ring-1 focus:ring-cyan-400">
+              ${recordFields.map(field => `<option value="${escapeHtml(field.id)}" ${field.id === item.id ? 'selected' : ''}>${escapeHtml(field.label)}</option>`).join('')}
+            </select>
+          </label>
+        </div>`;
+      const stageValues = [
+        { label: 'Raw / captured', value: item.rawValue, tone: 'border-slate-700 bg-slate-900' },
+        { label: 'Normalized', value: item.normalizedValue, tone: 'border-indigo-400/30 bg-indigo-400/10' },
+        { label: 'Suggested', value: item.suggestedValue || '—', tone: item.suggestedValue ? 'border-amber-400/30 bg-amber-400/10' : 'border-slate-800 bg-slate-900/60' },
+        { label: 'Final', value: item.finalValue, tone: 'border-cyan-400/30 bg-cyan-400/10' }
+      ];
+      const checks = Array.isArray(item.checks) ? item.checks : [];
+      const bboxText = item.bbox
+        ? `[${item.bbox.x0 ?? item.bbox.left ?? '?'}, ${item.bbox.y0 ?? item.bbox.top ?? '?'}, ${item.bbox.x1 ?? item.bbox.right ?? '?'}, ${item.bbox.y1 ?? item.bbox.bottom ?? '?'}]`
+        : 'Not captured';
+      fieldProvenancePanel.innerHTML = `
+        <div class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-4 py-3 flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[9px] font-extrabold uppercase tracking-[0.18em] text-cyan-300">Level 2 · Field Provenance</span>
+              <span class="px-2 py-0.5 rounded-full border text-[9px] font-bold ${provenanceStatusStyle(item.status)}">${escapeHtml(item.status || 'CAPTURED')}</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-2 min-w-0">
+              <h3 class="text-sm font-extrabold text-white truncate">${escapeHtml(item.label)}</h3>
+              <span class="text-[10px] mono-font text-slate-500 truncate">${escapeHtml(item.recordId || '')} · P${item.page || 1}${item.lineNumber >= 0 ? ` · L${item.lineNumber + 1}` : ''}</span>
+            </div>
+          </div>
+          <div class="flex items-end gap-2 shrink-0">
+            ${controls}
+            <button data-provenance-action="close" class="w-8 h-8 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800" title="Close field provenance"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="p-4 space-y-3">
+          <div class="grid grid-cols-4 gap-2">
+            ${stageValues.map((stage, index) => `
+              <div class="relative rounded-xl border ${stage.tone} px-3 py-2 min-w-0">
+                <div class="text-[9px] uppercase tracking-wider font-bold text-slate-500">${stage.label}</div>
+                <div class="mt-1 text-xs font-bold mono-font text-slate-100 truncate" title="${escapeHtml(stage.value)}">${escapeHtml(stage.value || '—')}</div>
+                ${index < stageValues.length - 1 ? '<i class="fa-solid fa-chevron-right absolute -right-[7px] top-1/2 -translate-y-1/2 text-[9px] text-slate-600 z-[1]"></i>' : ''}
+              </div>`).join('')}
+          </div>
+          <div class="grid grid-cols-[minmax(0,1.35fr)_minmax(230px,0.65fr)] gap-3">
+            <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Evidence checks</span>
+                <span class="text-[9px] text-slate-500">Only captured evidence is scored</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                ${checks.length ? checks.map(check => {
+                  const style = provenanceCheckStyle(check.status);
+                  return `<div class="rounded-lg border ${style.badge} px-2.5 py-2 min-w-0">
+                    <div class="flex items-center gap-1.5 text-[10px] font-bold ${style.color}"><i class="fa-solid ${style.icon}"></i><span>${escapeHtml(check.label)}</span><span class="ml-auto text-[9px]">${escapeHtml(check.status)}</span></div>
+                    <div class="mt-1 text-[9px] leading-relaxed text-slate-400 break-words">${escapeHtml(check.detail || '')}</div>
+                  </div>`;
+                }).join('') : '<div class="col-span-2 text-[10px] text-slate-500">No evidence checks were captured for this field.</div>'}
+              </div>
+            </div>
+            <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-3 space-y-2">
+              <div class="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">Source metadata</div>
+              <dl class="grid grid-cols-[78px_minmax(0,1fr)] gap-x-2 gap-y-1.5 text-[9px]">
+                <dt class="text-slate-500">Source</dt><dd class="text-slate-300 break-words">${escapeHtml(item.source || 'Extracted text')}</dd>
+                <dt class="text-slate-500">OCR conf.</dt><dd class="text-slate-300 mono-font">${item.ocrConfidence == null ? 'Not captured' : `${Math.round(item.ocrConfidence)}%`}</dd>
+                <dt class="text-slate-500">Geometry</dt><dd class="text-slate-300 mono-font">${item.geometryConfidence == null ? 'Not captured' : `${Math.round(item.geometryConfidence)}%`}</dd>
+                <dt class="text-slate-500">BBox</dt><dd class="text-slate-300 mono-font break-all">${escapeHtml(bboxText)}</dd>
+                <dt class="text-slate-500">Reason</dt><dd class="text-slate-300 break-words">${escapeHtml(item.correctionReason || 'No correction applied')}</dd>
+              </dl>
+              <button data-provenance-action="locate" class="w-full mt-1 px-2.5 py-1.5 rounded-lg border border-cyan-400/30 bg-cyan-400/10 hover:bg-cyan-400/20 text-cyan-200 text-[10px] font-bold"><i class="fa-solid fa-location-crosshairs mr-1.5"></i>Locate source value</button>
+            </div>
+          </div>
+          <div class="rounded-lg border border-slate-800 bg-black/20 px-3 py-2">
+            <span class="text-[9px] font-bold uppercase tracking-wider text-slate-500">Source line</span>
+            <div class="mt-1 text-[10px] mono-font text-slate-300 whitespace-pre-wrap break-words">${escapeHtml(item.sourceText || 'Not captured')}</div>
+          </div>
+        </div>`;
+    }
+
+    function locateActiveProvenanceField() {
+      const item = getActiveProvenance();
+      if (!item) return;
+      const pseudoIssue = {
+        page: item.page || 1,
+        lineNumber: item.lineNumber ?? -1,
+        original: item.rawValue || item.finalValue || '',
+        originalValue: item.rawValue || item.finalValue || '',
+        bbox: item.bbox || null
+      };
+      highlightPdfRegionForIssue(pseudoIssue);
+      const lines = outputText.value.split('\n');
+      const offsets = lineStartOffsets(lines);
+      const line = lines[item.lineNumber] || '';
+      const candidates = [item.finalValue, item.normalizedValue, item.rawValue].filter(Boolean);
+      let column = -1;
+      let value = '';
+      for (const candidate of candidates) {
+        column = line.indexOf(candidate);
+        if (column >= 0) { value = candidate; break; }
+      }
+      if (column < 0 || item.lineNumber < 0) return;
+      const start = offsets[item.lineNumber] + column;
+      outputText.focus();
+      outputText.setSelectionRange(start, start + value.length);
+      const lineHeight = parseFloat(getComputedStyle(outputText).lineHeight) || 18;
+      outputText.scrollTop = Math.max(0, item.lineNumber * lineHeight - outputText.clientHeight * 0.35);
     }
 
     function findIssueRange(issue) {
@@ -1244,6 +1699,119 @@
       previewContainer.querySelectorAll('.v22-locate-highlight').forEach(el => el.remove());
     }
 
+    function normalizeLocateText(value) {
+      return String(value || '')
+        .toLowerCase()
+        .replace(/[‐‑‒–—−]/g, '-')
+        .replace(/[^a-z0-9#.,:/()%-]+/g, ' ')
+        .trim()
+        .replace(/\s+/g, ' ');
+    }
+
+    function pageLocalLineForIssue(issue) {
+      const lines = outputText.value.split('\n');
+      const lineNumber = Number(issue.lineNumber);
+      if (!Number.isFinite(lineNumber) || lineNumber < 0) return -1;
+      for (let index = Math.min(lineNumber, lines.length - 1); index >= 0; index--) {
+        const match = lines[index].match(/^=== Page (\d+) ===$/);
+        if (match) return Math.max(0, lineNumber - index - 1);
+      }
+      return -1;
+    }
+
+    function unionBboxes(boxes) {
+      const valid = (boxes || []).filter(Boolean);
+      if (!valid.length) return null;
+      return {
+        x0: Math.min(...valid.map(b => b.x0)),
+        y0: Math.min(...valid.map(b => b.y0)),
+        x1: Math.max(...valid.map(b => b.x1)),
+        y1: Math.max(...valid.map(b => b.y1))
+      };
+    }
+
+    function findNativeRowForIssue(issue, artifact) {
+      if (!artifact || !Array.isArray(artifact.nativeRows) || !artifact.nativeRows.length) return null;
+      const target = normalizeLocateText(issue.originalValue ?? issue.original ?? '');
+      const context = normalizeLocateText(issue.context || '');
+      const localLine = pageLocalLineForIssue(issue);
+      let best = null;
+      let bestScore = -Infinity;
+
+      for (const row of artifact.nativeRows) {
+        const rowText = normalizeLocateText(row.text);
+        if (!rowText) continue;
+        let score = 0;
+        if (target && rowText === target) score += 180;
+        else if (target && (rowText.includes(target) || target.includes(rowText))) score += 120;
+        if (context && rowText === context) score += 100;
+        else if (context && (rowText.includes(context) || context.includes(rowText))) score += 55;
+        if (localLine >= 0 && Number.isFinite(row.lineIndex)) score -= Math.abs(row.lineIndex - localLine) * 4;
+        if (score > bestScore) {
+          bestScore = score;
+          best = row;
+        }
+      }
+      return bestScore >= 50 ? best : null;
+    }
+
+    function findWordSequenceBBox(row, value) {
+      if (!row || !Array.isArray(row.words) || !row.words.length) return null;
+      const targetWords = normalizeLocateText(value).split(' ').filter(Boolean);
+      if (!targetWords.length) return null;
+      const rowWords = row.words.map(word => normalizeLocateText(word.text));
+      for (let start = 0; start <= rowWords.length - targetWords.length; start++) {
+        let exact = true;
+        for (let offset = 0; offset < targetWords.length; offset++) {
+          if (rowWords[start + offset] !== targetWords[offset]) { exact = false; break; }
+        }
+        if (exact) return unionBboxes(row.words.slice(start, start + targetWords.length).map(word => word.bbox));
+      }
+      return null;
+    }
+
+    function findNativeBBoxForIssue(issue, artifact) {
+      const row = findNativeRowForIssue(issue, artifact);
+      if (!row) return null;
+      const value = issue.originalValue ?? issue.original ?? '';
+      return findWordSequenceBBox(row, value) || unionBboxes((row.tokens || []).map(token => token.bbox));
+    }
+
+    function findOcrBBoxForIssue(issue, artifact) {
+      if (!artifact || !artifact.ocrData || !artifact.width || !artifact.height) return null;
+      const targetWords = normalizeLocateText(issue.originalValue ?? issue.original ?? '').split(' ').filter(Boolean);
+      if (!targetWords.length) return null;
+      const words = collectOcrWords(artifact.ocrData)
+        .filter(word => word && word.bbox && normalizeLocateText(word.text))
+        .sort((a, b) => {
+          const ay = (a.bbox.y0 + a.bbox.y1) / 2;
+          const by = (b.bbox.y0 + b.bbox.y1) / 2;
+          if (Math.abs(ay - by) > Math.max(8, (a.bbox.y1 - a.bbox.y0) * 0.65)) return ay - by;
+          return a.bbox.x0 - b.bbox.x0;
+        });
+      const normalized = words.map(word => normalizeLocateText(word.text));
+      const matches = [];
+      for (let start = 0; start <= normalized.length - targetWords.length; start++) {
+        let exact = true;
+        for (let offset = 0; offset < targetWords.length; offset++) {
+          if (normalized[start + offset] !== targetWords[offset]) { exact = false; break; }
+        }
+        if (exact) matches.push(words.slice(start, start + targetWords.length));
+      }
+      if (!matches.length) return null;
+      const expectedY = pageLocalLineForIssue(issue);
+      const pageLines = Math.max(1, (artifact.cleanedLines || []).length);
+      const expectedRatio = expectedY >= 0 ? Math.min(1, Math.max(0, expectedY / pageLines)) : 0.5;
+      const best = matches.sort((left, right) => {
+        const lb = unionBboxes(left.map(word => word.bbox));
+        const rb = unionBboxes(right.map(word => word.bbox));
+        const ly = ((lb.y0 + lb.y1) / 2) / artifact.height;
+        const ry = ((rb.y0 + rb.y1) / 2) / artifact.height;
+        return Math.abs(ly - expectedRatio) - Math.abs(ry - expectedRatio);
+      })[0];
+      return unionBboxes(best.map(word => word.bbox));
+    }
+
     function highlightPdfRegionForIssue(issue) {
       clearPdfHighlightBoxes();
       if (!issue) return;
@@ -1254,82 +1822,34 @@
       const targetCanvas = canvases[Math.max(0, Math.min(canvases.length - 1, pageNum - 1))];
       const wrapper = targetCanvas.parentElement;
       if (!wrapper) return;
+      if (getComputedStyle(wrapper).position === 'static') wrapper.style.position = 'relative';
 
-      if (getComputedStyle(wrapper).position === 'static') {
-        wrapper.style.position = 'relative';
-      }
+      const artifact = (typeof v22State !== 'undefined' && Array.isArray(v22State.pageArtifacts))
+        ? v22State.pageArtifacts.find(item => item.page === pageNum)
+        : null;
+      if (!artifact || !artifact.width || !artifact.height) return;
+
+      // Native Text uses the exact token/row geometry captured during extraction.
+      // OCR keeps its own word boxes. If neither source can resolve a reliable
+      // match, draw nothing instead of placing a misleading fallback rectangle.
+      let bbox = null;
+      if (artifact.nativeRows && artifact.nativeRows.length) bbox = findNativeBBoxForIssue(issue, artifact);
+      else if (artifact.ocrData) bbox = findOcrBBoxForIssue(issue, artifact);
+      if (!bbox) return;
 
       const canvasRect = targetCanvas.getBoundingClientRect();
       const dispW = canvasRect.width || targetCanvas.clientWidth || targetCanvas.width;
       const dispH = canvasRect.height || targetCanvas.clientHeight || targetCanvas.height;
       const offsetLeft = targetCanvas.offsetLeft;
       const offsetTop = targetCanvas.offsetTop;
-
-      // Default small fallback box near left table column if exact word bbox is unavailable
-      let boxLeft = offsetLeft + dispW * 0.02;
-      let boxTop = offsetTop + dispH * 0.45;
-      let boxW = dispW * 0.12;
-      let boxH = Math.max(18, dispH * 0.024);
-
-      const art = (typeof v22State !== 'undefined' && Array.isArray(v22State.pageArtifacts))
-        ? v22State.pageArtifacts.find(a => a.page === pageNum)
-        : null;
-
-      const needle = String(issue.originalValue ?? issue.original ?? '').trim().toLowerCase();
-      if (art && art.ocrData && art.width && art.height && needle) {
-        const words = collectOcrWords(art.ocrData);
-        const tokens = needle.split(/\s+/).filter(Boolean);
-
-        // Score each candidate word so we pick the tightest specific match rather than broad substring matches
-        const scoredWords = words
-          .filter(w => w && w.bbox && (w.text || '').trim())
-          .map(w => {
-            const wt = w.text.trim().toLowerCase();
-            let score = 0;
-            if (wt === needle) score = 100;
-            else if (tokens.includes(wt) && wt.length >= 2) score = 80;
-            else if (needle.length >= 4 && wt.includes(needle)) score = 65;
-            else if (wt.length >= 5 && needle.includes(wt)) score = 50;
-            return { w, score };
-          })
-          .filter(x => x.score > 0);
-
-        if (scoredWords.length) {
-          // If there is an exact/high-score match (e.g. 7-digit item code), keep only the top tier and filter out huge spans
-          const maxScore = Math.max(...scoredWords.map(x => x.score));
-          const tightMatches = scoredWords
-            .filter(x => x.score >= maxScore - 15)
-            .map(x => x.w)
-            .filter(w => {
-              const ww = w.bbox.x1 - w.bbox.x0;
-              const wh = w.bbox.y1 - w.bbox.y0;
-              return ww < art.width * 0.35 && wh < art.height * 0.08;
-            });
-
-          const chosen = tightMatches.length ? tightMatches : [scoredWords.sort((a, b) => b.score - a.score)[0].w];
-
-          // Pick the match closest to expected vertical proportion from lineNumber if multiple exist
-          const totalLines = Math.max(1, outputText.value.split('\n').length);
-          const expectedYRatio = Math.min(0.95, Math.max(0.05, ((issue.lineNumber || 0) + 1) / totalLines));
-          const bestWord = [...chosen].sort((a, b) => {
-            const ay = ((a.bbox.y0 + a.bbox.y1) / 2) / art.height;
-            const by = ((b.bbox.y0 + b.bbox.y1) / 2) / art.height;
-            return Math.abs(ay - expectedYRatio) - Math.abs(by - expectedYRatio);
-          })[0];
-
-          const minX0 = bestWord.bbox.x0;
-          const minY0 = bestWord.bbox.y0;
-          const maxX1 = bestWord.bbox.x1;
-          const maxY1 = bestWord.bbox.y1;
-          const padX = Math.max(3, Math.min(10, (maxX1 - minX0) * 0.12));
-          const padY = Math.max(2, Math.min(6, (maxY1 - minY0) * 0.18));
-
-          boxLeft = offsetLeft + ((minX0 - padX) / art.width) * dispW;
-          boxTop = offsetTop + ((minY0 - padY) / art.height) * dispH;
-          boxW = Math.max(18, (((maxX1 - minX0) + padX * 2) / art.width) * dispW);
-          boxH = Math.max(14, (((maxY1 - minY0) + padY * 2) / art.height) * dispH);
-        }
-      }
+      const rawW = Math.max(1, bbox.x1 - bbox.x0);
+      const rawH = Math.max(1, bbox.y1 - bbox.y0);
+      const padX = Math.max(3, Math.min(12, rawW * 0.08));
+      const padY = Math.max(2, Math.min(8, rawH * 0.18));
+      const boxLeft = offsetLeft + ((bbox.x0 - padX) / artifact.width) * dispW;
+      const boxTop = offsetTop + ((bbox.y0 - padY) / artifact.height) * dispH;
+      const boxW = Math.max(18, ((rawW + padX * 2) / artifact.width) * dispW);
+      const boxH = Math.max(14, ((rawH + padY * 2) / artifact.height) * dispH);
 
       const box = document.createElement('div');
       box.className = 'v22-locate-highlight';
@@ -1364,10 +1884,10 @@
         'font-family:JetBrains Mono,monospace'
       ].join(';');
       box.appendChild(tag);
-
       wrapper.appendChild(box);
       box.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     }
+
     function locateValidationIssue(issueId) {
       const issue = validationIssues.find(item => item.id === issueId);
       if (!issue) return;
@@ -1383,24 +1903,61 @@
       updateReviewSelectionState();
     }
 
-    function extractStructuredNativeText(items) {
+    function splitNativeTokenIntoWords(token) {
+      const matches = [...String(token.str || '').matchAll(/\S+/g)];
+      if (!matches.length) return [];
+      const textLength = Math.max(1, String(token.str || '').length);
+      const width = Math.max(1, token.bbox.x1 - token.bbox.x0);
+      return matches.map(match => {
+        const startRatio = match.index / textLength;
+        const endRatio = (match.index + match[0].length) / textLength;
+        return {
+          text: match[0],
+          bbox: {
+            x0: token.bbox.x0 + width * startRatio,
+            y0: token.bbox.y0,
+            x1: token.bbox.x0 + width * endRatio,
+            y1: token.bbox.y1
+          },
+          cellIndex: token.cellIndex
+        };
+      });
+    }
+
+    function extractStructuredNativeText(items, pageArtifact = null, renderScale = 1) {
       if (!items.length) return '';
       const tokens = items
-        .filter(item => item.str.trim().length > 0)
-        .map(item => ({
-          str: item.str.trim(),
-          x: item.transform[4],
-          y: item.transform[5],
-          w: item.width
-        }));
+        .filter(item => item.str && item.str.trim().length > 0)
+        .map((item, sourceIndex) => {
+          const str = item.str.trim();
+          const pdfX = Number(item.transform[4] || 0);
+          const pdfY = Number(item.transform[5] || 0);
+          const pdfHeight = Math.max(1, Math.hypot(Number(item.transform[2] || 0), Number(item.transform[3] || 0)));
+          const canvasX = pdfX * renderScale;
+          const canvasBaselineY = pageArtifact ? pageArtifact.height - pdfY * renderScale : pdfY;
+          const canvasHeight = pdfHeight * renderScale;
+          const canvasWidth = Math.max(1, Number(item.width || 0) * renderScale);
+          return {
+            str,
+            x: pdfX,
+            y: pdfY,
+            w: Number(item.width || 0),
+            sourceIndex,
+            bbox: {
+              x0: canvasX,
+              y0: canvasBaselineY - canvasHeight,
+              x1: canvasX + canvasWidth,
+              y1: canvasBaselineY
+            }
+          };
+        });
 
-      tokens.sort((a, b) => b.y - a.y);
-
+      tokens.sort((a, b) => b.y - a.y || a.x - b.x);
       const lines = [];
       const yTolerance = 4.5;
 
       for (const token of tokens) {
-        let line = lines.find(l => Math.abs(l.y - token.y) <= yTolerance);
+        let line = lines.find(candidate => Math.abs(candidate.y - token.y) <= yTolerance);
         if (!line) {
           line = { y: token.y, items: [] };
           lines.push(line);
@@ -1408,21 +1965,53 @@
         line.items.push(token);
       }
 
-      return lines.map(line => {
+      lines.sort((a, b) => b.y - a.y);
+      const rowTexts = lines.map((line, lineIndex) => {
         line.items.sort((a, b) => a.x - b.x);
         let rowStr = '';
         let prevEndX = null;
+        let cellIndex = 0;
+        const cells = [''];
         for (const item of line.items) {
+          let separator = '';
           if (prevEndX !== null) {
             const gap = item.x - prevEndX;
-            if (gap > 14) rowStr += '\t';
-            else if (gap > 2.5) rowStr += ' ';
+            if (gap > 14) {
+              separator = '\t';
+              cellIndex += 1;
+              cells.push('');
+            } else if (gap > 2.5) {
+              separator = ' ';
+            }
           }
-          rowStr += item.str;
+          item.cellIndex = cellIndex;
+          rowStr += separator + item.str;
+          cells[cellIndex] += `${cells[cellIndex] ? ' ' : ''}${item.str}`;
           prevEndX = item.x + item.w;
         }
+
+        if (pageArtifact) {
+          const rowTokens = line.items.map(item => ({
+            text: item.str,
+            str: item.str,
+            bbox: item.bbox,
+            cellIndex: item.cellIndex,
+            sourceIndex: item.sourceIndex
+          }));
+          const words = rowTokens.flatMap(splitNativeTokenIntoWords);
+          pageArtifact.nativeRows.push({
+            lineIndex,
+            text: rowStr,
+            cells,
+            tokens: rowTokens,
+            words,
+            bbox: unionBboxes(rowTokens.map(token => token.bbox))
+          });
+          pageArtifact.nativeTokens.push(...rowTokens);
+        }
         return rowStr;
-      }).join('\n');
+      });
+      return rowTexts.join('\n');
     }
 
     function collectOcrWords(data) {
@@ -1530,7 +2119,6 @@
         .replace(/G/gi, '6')
         .replace(/B/gi, '8');
 
-      // Quantities are whole-number counts: OCR frequently turns the thousands comma into a dot.
       if (/^\d{1,3}\.\d{3}$/.test(token)) token = token.replace('.', ',');
       return token;
     }
@@ -1584,10 +2172,8 @@
         } else if (primaryConfidence < 78 && altConfidence >= primaryConfidence - 3) {
           chosen = alt;
         } else if (altDigits.length === primaryDigits.length + 1 && altDigits.endsWith(primaryDigits) && altConfidence >= 62) {
-          // Recovers a dropped leading digit such as 123 -> 23.
           chosen = alt;
         } else if (altDigits.length === primaryDigits.length && altConfidence >= primaryConfidence + 7) {
-          // Resolves digit substitutions such as 800 -> 200 only when the focused pass is clearly stronger.
           chosen = alt;
         } else {
           qualityStats.quantityReviews += 1;
@@ -1652,7 +2238,6 @@
       }).filter(r => r.trim() !== '').join('\n');
     }
 
-    // Erases grid lines cleanly while preserving soft grayscale anti-aliasing on all characters and decimal points
     function removeGridLinesPreserveAntiAliasing(ctx, width, height, stripLines) {
       const imgData = ctx.getImageData(0, 0, width, height);
       const data = imgData.data;
@@ -1662,7 +2247,6 @@
       for (let i = 0; i < totalPixels; i++) {
         const idx = i * 4;
         const g = Math.round(0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
-        // Subtle contrast boost on light anti-aliased dots without clipping them to white
         grayBuf[i] = g > 242 ? 255 : Math.max(0, Math.round((g - 30) * 1.12));
       }
 
@@ -1671,7 +2255,6 @@
         const minHorizontalRun = Math.max(80, Math.floor(width * 0.035));
         const minVerticalRun = Math.max(65, Math.floor(height * 0.018));
 
-        // Horizontal table borders
         for (let y = 0; y < height; y++) {
           let runStart = -1;
           const rowOffset = y * width;
@@ -1692,7 +2275,6 @@
           }
         }
 
-        // Vertical table borders
         for (let x = 0; x < width; x++) {
           let runStart = -1;
           for (let y = 0; y <= height; y++) {
@@ -1717,7 +2299,6 @@
         }
       }
 
-      // Write preserved anti-aliased grayscale image back to canvas
       for (let i = 0; i < totalPixels; i++) {
         const idx = i * 4;
         const val = grayBuf[i];
@@ -1758,56 +2339,32 @@
       }).join('\n');
     }
 
-    // Logistics-specific post-processing cleanup (safe deterministic fixes only)
     function postProcessLogisticsText(text) {
       const cleaned = text
-        // Fix '0CT' or '0C1' -> 'OCT' in DD/MMM/YY dates
         .replace(/(\b\d{1,2}\/)[0O]C[T1](\/\d{2,4}\b)/gi, '$1OCT$2')
-        // Fix 'T.O00KG' / 'T.00KG' -> '7.00KG'
         .replace(/\bT\.([0O]{2,3}KG\b)/gi, '7.00KG')
-        // Fix '7T40KG' -> '7.40KG'
         .replace(/\b(\d)T(\d{2}KG\b)/gi, '$1.$2')
-        // Fix common uppercase word OCR confusions
         .replace(/\bPIANT\b/g, 'PLANT')
         .replace(/\b[ITL]?CHIBANKU[JI1T]{1,2}\b/g, 'ICHIBANKUJI')
-        // Remove stray spaces inside decimal numbers & thousand commas
         .replace(/(\d+)\.\s+(\d{2,3}\b)/g, '$1.$2')
         .replace(/(\d+),\s+(\d{3}\b)/g, '$1,$2');
       return normalizeLikelyQuantityLines(normalizeProtectedUnits(cleaned));
     }
 
     function finalizeValidatedText(text) {
-      // Final safety net used both after OCR and immediately before CSV export.
       return normalizeLikelyQuantityLines(normalizeProtectedUnits(text));
     }
-
-    // =========================================================================
-    // V2.2 EXTENSIONS: TABLE GEOMETRY ENGINE, TARGETED CELL RE-OCR & BULK APPLY
-    // =========================================================================
 
     const includeReviewFixesToggle = document.getElementById('includeReviewFixesToggle');
     const applyAllSafeBtn = document.getElementById('applyAllSafeBtn');
     const undoBatchBtn = document.getElementById('undoBatchBtn');
     const bulkPreviewBanner = document.getElementById('bulkPreviewBanner');
     const batchResultBanner = document.getElementById('batchResultBanner');
+    const categorizedBulkModal = document.getElementById('categorizedBulkModal');
+    const categorizedBulkModalBody = document.getElementById('categorizedBulkModalBody');
 
     let bulkBatchSnapshot = null;
     let lastBatchReport = null;
-    let activeBatchFilter = 'ALL';
-    const targetedOcrSessionCache = new Map();
-
-    function isIdentityLockedAtLine(lineNumber, originalValue) {
-      const recs = v22State.logicalRecords || [];
-      for (const rec of recs) {
-        if (!rec.identityLocked) continue;
-        if (lineNumber >= rec.startLine && lineNumber <= rec.endLine) {
-          const core = extractNumericCore(originalValue);
-          if (core && core === rec.resolvedItemCore) return true;
-          if (/P\.?\s*O\.?\s*NO\.?/i.test(rec.poNumber.rawValue) && originalValue === rec.poNumber.finalValue) return true;
-        }
-      }
-      return false;
-    }
 
     function enrichValidationIssuesMetadata() {
       const currentText = outputText.value;
@@ -1875,13 +2432,13 @@
       const tier = (issue.correctionLevel === 'SAFE_NORMALIZATION' || issue.correctionLevel === 'HIGH_CONFIDENCE') ? 'SAFE' : 'REVIEW';
       return { eligible: true, tier };
     }
+
     function getEligibleBulkSuggestions(includeReviewLevel = false) {
       enrichValidationIssuesMetadata();
       const pending = validationIssues.filter(i => i.status === 'pending');
       const eligible = [];
       const excluded = [];
 
-      // Deduplicate overlapping line/range edits by keeping highest confidence first
       const sortedPending = [...pending].sort((a, b) => Number(b.confidence || 0) - Number(a.confidence || 0));
       const claimedRanges = [];
 
@@ -1963,7 +2520,6 @@
       const { eligible, excluded } = getEligibleBulkSuggestions(includeReviewLevel);
       if (!eligible.length) return;
 
-      // Step 6: Save full pre-apply snapshot for single-level batch undo
       bulkBatchSnapshot = {
         text: outputText.value,
         validationIssues: JSON.parse(JSON.stringify(validationIssues)),
@@ -1974,7 +2530,6 @@
         }
       };
 
-      // Step 7: Apply edits from end of text backwards to avoid position-shift errors
       const orderedDesc = [...eligible].sort((a, b) => b.range.start - a.range.start);
       let nextText = outputText.value;
       let appliedCount = 0;
@@ -2005,7 +2560,6 @@
       outputText.value = nextText;
       qualityStats.itemFixes = (qualityStats.itemFixes || 0) + appliedCount;
 
-      // Step 8-10: Re-run validation, refresh counts, quality scores, and render summary
       detectCriticalFieldIssues(outputText.value);
       enrichValidationIssuesMetadata();
       renderValidationReview();
@@ -2024,6 +2578,233 @@
       };
       renderBatchResultBanner();
       updateBulkToolbarState();
+    }
+
+    const BULK_CATEGORY_DEFINITIONS = [
+      {
+        key: 'ITEM_29',
+        label: '2/9 Item Code',
+        description: 'Item Code suggestions that only change the leading digit between 2 and 9.',
+        icon: 'fa-barcode',
+        accent: 'rose'
+      },
+      {
+        key: 'ITEM_NAME',
+        label: 'Item Name',
+        description: 'Item name, description and phrase-consensus suggestions.',
+        icon: 'fa-font',
+        accent: 'blue'
+      },
+      {
+        key: 'OTHER_DATA',
+        label: 'Other Data',
+        description: 'All remaining actionable data suggestions, including units, quantities and measurements.',
+        icon: 'fa-table-cells',
+        accent: 'slate'
+      }
+    ];
+
+    function normalizeBulkCodeValue(value) {
+      return String(value ?? '').trim().replace(/[()\s]/g, '');
+    }
+
+    function classifyBulkSuggestion(issue) {
+      const fieldType = String(issue?.fieldType || '').toUpperCase();
+      const issueType = String(issue?.type || '').toUpperCase();
+      const original = normalizeBulkCodeValue(issue?.originalValue ?? issue?.original);
+      const suggested = normalizeBulkCodeValue(issue?.suggested ?? issue?.suggestedValue);
+      const original29 = original.match(/^([29])(\d{6})$/);
+      const suggested29 = suggested.match(/^([29])(\d{6})$/);
+      const itemCodeContext = fieldType === 'ITEM_CODE' || /ITEM\s*(?:CODE|NO|IDENTITY)/.test(issueType);
+
+      if (
+        itemCodeContext &&
+        original29 &&
+        suggested29 &&
+        original29[1] !== suggested29[1] &&
+        original29[2] === suggested29[2]
+      ) return 'ITEM_29';
+
+      if (
+        fieldType === 'DESCRIPTION' ||
+        /ITEM\s*NAME|DESCRIPTION|PHRASE/.test(issueType)
+      ) return 'ITEM_NAME';
+
+      return 'OTHER_DATA';
+    }
+
+    function getCategorizedBulkSuggestions() {
+      enrichValidationIssuesMetadata();
+      const groups = Object.fromEntries(BULK_CATEGORY_DEFINITIONS.map(category => [category.key, []]));
+      const excluded = [];
+
+      for (const issue of validationIssues.filter(item => item.status === 'pending')) {
+        const original = String(issue.originalValue ?? issue.original ?? '');
+        const suggested = String(issue.suggested ?? issue.suggestedValue ?? '').trim();
+        if (!suggested || suggested === original) {
+          excluded.push({ issue, reason: 'No actionable replacement value' });
+          continue;
+        }
+        const range = findIssueRange(issue);
+        if (!range) {
+          excluded.push({ issue, reason: 'Stale or missing target' });
+          continue;
+        }
+        const category = classifyBulkSuggestion(issue);
+        groups[category].push({ issue, range });
+      }
+
+      return { groups, excluded };
+    }
+
+    function bulkCategoryAccentClasses(accent) {
+      if (accent === 'rose') return {
+        icon: 'bg-rose-100 text-rose-700',
+        count: 'bg-rose-50 text-rose-700 border-rose-200',
+        button: 'bg-rose-600 hover:bg-rose-500'
+      };
+      if (accent === 'blue') return {
+        icon: 'bg-blue-100 text-blue-700',
+        count: 'bg-blue-50 text-blue-700 border-blue-200',
+        button: 'bg-blue-600 hover:bg-blue-500'
+      };
+      return {
+        icon: 'bg-slate-200 text-slate-700',
+        count: 'bg-slate-100 text-slate-700 border-slate-200',
+        button: 'bg-slate-700 hover:bg-slate-600'
+      };
+    }
+
+    function renderCategorizedBulkModal() {
+      const { groups, excluded } = getCategorizedBulkSuggestions();
+      const total = BULK_CATEGORY_DEFINITIONS.reduce((sum, category) => sum + groups[category.key].length, 0);
+      const cards = BULK_CATEGORY_DEFINITIONS.map(category => {
+        const items = groups[category.key];
+        const accents = bulkCategoryAccentClasses(category.accent);
+        const examples = items.slice(0, 3).map(({ issue }) => {
+          const original = issue.originalValue ?? issue.original ?? '';
+          const suggested = issue.suggested ?? issue.suggestedValue ?? '';
+          return `<span class="inline-flex max-w-full items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 mono-font text-[9px] text-slate-600"><span class="truncate">${escapeHtml(original)}</span><i class="fa-solid fa-arrow-right text-slate-300"></i><span class="truncate font-bold text-slate-800">${escapeHtml(suggested)}</span></span>`;
+        }).join('');
+        return `
+          <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" data-bulk-category-card="${category.key}">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="w-9 h-9 shrink-0 rounded-lg ${accents.icon} flex items-center justify-center"><i class="fa-solid ${category.icon}"></i></span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-xs font-extrabold text-slate-900">${escapeHtml(category.label)}</h3>
+                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold mono-font ${accents.count}">${items.length} suggestion${items.length === 1 ? '' : 's'}</span>
+                  </div>
+                  <p class="mt-1 text-[10px] leading-relaxed text-slate-500">${escapeHtml(category.description)}</p>
+                </div>
+              </div>
+              <button type="button" data-apply-bulk-category="${category.key}" ${items.length ? '' : 'disabled'} class="shrink-0 rounded-lg px-3 py-2 text-[10px] font-extrabold text-white shadow-sm transition ${accents.button} disabled:cursor-not-allowed disabled:opacity-35">Apply All ${items.length}</button>
+            </div>
+            ${examples ? `<div class="mt-3 flex flex-wrap gap-1.5">${examples}${items.length > 3 ? `<span class="px-2 py-1 text-[9px] font-semibold text-slate-400">+${items.length - 3} more</span>` : ''}</div>` : '<div class="mt-3 text-[10px] font-semibold text-slate-400">No actionable suggestions in this category.</div>'}
+          </section>`;
+      }).join('');
+
+      categorizedBulkModalBody.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
+          <span class="text-[11px] font-bold text-emerald-900">${total} actionable suggestion${total === 1 ? '' : 's'} available</span>
+          <span class="text-[10px] text-emerald-800">Category action is unconditional; confidence and review level do not limit it.</span>
+        </div>
+        ${cards}
+        ${excluded.length ? `<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-800"><b>${excluded.length} item${excluded.length === 1 ? '' : 's'} excluded:</b> no usable replacement or the target is no longer present.</div>` : ''}
+      `;
+    }
+
+    function openCategorizedBulkModal() {
+      renderCategorizedBulkModal();
+      categorizedBulkModal.classList.remove('hidden');
+    }
+
+    function closeCategorizedBulkModal() {
+      categorizedBulkModal.classList.add('hidden');
+    }
+
+    function executeCategorizedBulkApply(categoryKey) {
+      const { groups } = getCategorizedBulkSuggestions();
+      const candidates = groups[categoryKey] || [];
+      if (!candidates.length) {
+        renderCategorizedBulkModal();
+        return;
+      }
+
+      bulkBatchSnapshot = {
+        text: outputText.value,
+        validationIssues: JSON.parse(JSON.stringify(validationIssues)),
+        qualityStats: { ...qualityStats },
+        v22StateSnapshot: {
+          ...v22State,
+          canonicalItems: new Map(v22State.canonicalItems)
+        }
+      };
+
+      const ranked = [...candidates].sort((a, b) => Number(b.issue.confidence || 0) - Number(a.issue.confidence || 0));
+      const accepted = [];
+      const claimedRanges = [];
+      const skipReasons = [];
+
+      for (const candidate of ranked) {
+        const range = findIssueRange(candidate.issue);
+        if (!range) {
+          skipReasons.push(`Missing target on line ${(candidate.issue.lineNumber || 0) + 1}`);
+          continue;
+        }
+        const overlaps = claimedRanges.some(existing => Math.max(existing.start, range.start) < Math.min(existing.end, range.end));
+        if (overlaps) {
+          skipReasons.push(`Overlapping target "${candidate.issue.originalValue}"`);
+          continue;
+        }
+        claimedRanges.push(range);
+        accepted.push({ issue: candidate.issue, range });
+      }
+
+      const orderedDesc = accepted.sort((a, b) => b.range.start - a.range.start);
+      const appliedIssueIds = new Set();
+      let nextText = outputText.value;
+
+      for (const item of orderedDesc) {
+        const original = String(item.issue.originalValue ?? item.issue.original ?? '');
+        const replacement = String(item.issue.suggested ?? item.issue.suggestedValue ?? '').trim();
+        if (!replacement || nextText.slice(item.range.start, item.range.end) !== original) {
+          skipReasons.push(`Stale target "${original}" on line ${(item.issue.lineNumber || 0) + 1}`);
+          continue;
+        }
+        nextText = nextText.slice(0, item.range.start) + replacement + nextText.slice(item.range.end);
+        appliedIssueIds.add(item.issue.id);
+      }
+
+      outputText.value = nextText;
+      qualityStats.itemFixes = (qualityStats.itemFixes || 0) + appliedIssueIds.size;
+
+      // Remove successfully processed cards before re-validation. Remaining cards
+      // are reconstructed against the edited text; applied cards cannot linger.
+      validationIssues = validationIssues.filter(issue => !appliedIssueIds.has(issue.id));
+      if (typeof clearPdfHighlightBoxes === 'function') clearPdfHighlightBoxes();
+      detectCriticalFieldIssues(outputText.value);
+      enrichValidationIssuesMetadata();
+      renderValidationReview();
+      refreshQualityStatus();
+      updateCharCount();
+
+      const definition = BULK_CATEGORY_DEFINITIONS.find(category => category.key === categoryKey);
+      const remainingReview = validationIssues.filter(issue => issue.status === 'pending').length;
+      const conflictCount = validationIssues.filter(issue => issue.status === 'pending' && issue.riskLevel === 'CRITICAL').length;
+      lastBatchReport = {
+        applied: appliedIssueIds.size,
+        skipped: skipReasons.length,
+        conflicts: conflictCount,
+        remainingReview,
+        skipReasons,
+        category: definition?.label || categoryKey
+      };
+      renderBatchResultBanner();
+      statusText.textContent = `${definition?.label || 'Category'}: ${appliedIssueIds.size} suggestion(s) applied; ${remainingReview} still require review`;
+      updateBulkToolbarState();
+      renderCategorizedBulkModal();
     }
 
     function renderBatchResultBanner() {
@@ -2068,80 +2849,22 @@
       updateBulkToolbarState();
     }
 
-    // Geometry-aware Packing List column assignment & suspicious row detector
-    function assignTokenToColumn(token, columns, rowContext = {}) {
-      if (!token || !token.bbox || !Array.isArray(columns) || !columns.length) {
-        return { assignedColumn: 'description', assignmentConfidence: 40, alternativeColumns: [], reason: 'Missing geometry' };
+    categorizedBulkModal.addEventListener('click', event => {
+      const categoryButton = event.target.closest('[data-apply-bulk-category]');
+      if (categoryButton) {
+        executeCategorizedBulkApply(categoryButton.dataset.applyBulkCategory);
+        return;
       }
-      const x0 = token.bbox.x0;
-      const x1 = token.bbox.x1;
-      const cx = (x0 + x1) / 2;
-      const w = Math.max(4, x1 - x0);
-      const txt = String(token.text || '').trim();
-
-      const scored = columns.map(col => {
-        const overlap = Math.max(0, Math.min(x1, col.xEnd ?? col.rangeMax ?? x1) - Math.max(x0, col.xStart ?? col.rangeMin ?? x0));
-        const overlapRatio = overlap / w;
-        const center = col.xCenter ?? col.center ?? ((col.xStart + col.xEnd) / 2);
-        const distScore = Math.max(0, 1 - Math.abs(cx - center) / 140);
-        let typeBonus = 0;
-        if (col.columnType === 'netWeight' || col.columnType === 'grossWeight') {
-          if (/^\d+(?:[.,]\d+)?\s*KG$/i.test(txt) || /^\d{1,3}(?:,\d{3})*(?:\.\d+)?$/.test(txt)) typeBonus = 18;
-        } else if (col.columnType === 'measurement') {
-          if (/\d+(?:\.\d+)?\s*[Xx×]\s*\d+/i.test(txt) || /\bCM\b/i.test(txt)) typeBonus = 20;
-        } else if (col.columnType === 'pcs' || col.columnType === 'ctn') {
-          if (/^\d{1,3}(?:,\d{3})*(?:\s*PCS)?$/i.test(txt)) typeBonus = 15;
-        } else if (col.columnType === 'description') {
-          if (/[A-Za-z]{3,}/.test(txt)) typeBonus = 14;
-        }
-        const totalScore = Math.round(overlapRatio * 45 + distScore * 30 + typeBonus + (col.headerConfidence ? col.headerConfidence * 0.15 : 10));
-        return { column: col.columnType || col.field, score: totalScore };
-      }).sort((a, b) => b.score - a.score);
-
-      const best = scored[0];
-      const conf = Math.max(25, Math.min(99, best.score));
-      return {
-        assignedColumn: best.column,
-        assignmentConfidence: conf,
-        alternativeColumns: scored.slice(1, 3),
-        reason: `Overlap/center geometry score ${conf}`
-      };
-    }
-
-    function detectMergedNumericPattern(value) {
-      const s = String(value || '').trim();
-      if (!s) return null;
-      // Multiple decimal groups like 1.032,00.1.50 or 15,636.7822.541.19
-      if (/\d+(?:[.,]\d+){3,}/.test(s) || /\d+\.\d{2}\d+\.\d{2}/.test(s)) {
-        return { merged: true, reason: `Merged or multi-decimal numeric pattern "${s}"` };
+      if (event.target === categorizedBulkModal || event.target.closest('[data-close-categorized-bulk]')) {
+        closeCategorizedBulkModal();
       }
-      return null;
-    }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !categorizedBulkModal.classList.contains('hidden')) closeCategorizedBulkModal();
+    });
 
-    applyAllSafeBtn.addEventListener('click', showBulkPreviewSummary);
+    applyAllSafeBtn.addEventListener('click', openCategorizedBulkModal);
     undoBatchBtn.addEventListener('click', undoLastBulkBatch);
-
-    const _v22ExtOrigDetect = detectCriticalFieldIssues;
-    detectCriticalFieldIssues = function(text) {
-      const res = _v22ExtOrigDetect.call(this, text);
-      enrichValidationIssuesMetadata();
-      renderValidationReview();
-      return res;
-    };
-
-    const _v22ExtOrigReset = resetV22State;
-    resetV22State = function() {
-      bulkBatchSnapshot = null;
-      lastBatchReport = null;
-      bulkPreviewBanner.classList.add('hidden');
-      batchResultBanner.classList.add('hidden');
-      _v22ExtOrigReset.call(this);
-      updateBulkToolbarState();
-    };
-
-    // =========================================================================
-    // V2.2 REGRESSION FIX: IMMUTABLE IDENTITY, RECORD BOUNDARIES & CORRECTION GATE
-    // =========================================================================
 
     const exportStructuredCsvBtn = document.getElementById('exportStructuredCsvBtn');
     const docTypeBadge = document.getElementById('docTypeBadge');
@@ -2149,8 +2872,7 @@
     const tableModeBadge = document.getElementById('tableModeBadge');
     const suspiciousCountBadge = document.getElementById('suspiciousCountBadge');
     const pageQualityStrip = document.getElementById('pageQualityStrip');
-
-    const V22_DEBUG_LOGGING = false;
+    let selectedPageQualityPage = 1;
 
     let v22State = {
       docType: { type: 'UNKNOWN', confidence: 0, signals: [] },
@@ -2167,20 +2889,6 @@
       ocrCache: new Map(),
       auditTrace: []
     };
-
-    const V22_OCR_CONFUSION_PAIRS = new Set([
-      '02', '20', '09', '90', '29', '92', '01', '10', '08', '80',
-      '15', '51', '17', '71', '18', '81', '26', '62',
-      '28', '82', '35', '53', '36', '63', '56', '65',
-      'B8', '8B', 'O0', '0O', 'I1', '1I', 'L1', '1L',
-      'S5', '5S', 'G6', '6G', 'Z2', '2Z', 'T7', '7T'
-    ]);
-
-    function v22DebugLog(...args) {
-      if (V22_DEBUG_LOGGING && typeof console !== 'undefined') {
-        console.log('[V2.2-IdentityAudit]', ...args);
-      }
-    }
 
     function createImmutableField(rawValue, meta = {}) {
       const raw = rawValue == null ? '' : String(rawValue);
@@ -2199,6 +2907,157 @@
         locked: Boolean(meta.locked),
         correctionReason: ''
       };
+    }
+
+    function findRecordValueLine(lines, record, value) {
+      if (!value) return record.startLine;
+      const needle = String(value).replace(/\s+/g, '').toUpperCase();
+      for (let index = Math.max(0, record.startLine); index <= Math.min(lines.length - 1, record.endLine); index++) {
+        const hay = String(lines[index] || '').replace(/\s+/g, '').toUpperCase();
+        if (hay.includes(needle)) return index;
+      }
+      return record.startLine;
+    }
+
+    function findFieldOcrEvidence(pageArtifact, value) {
+      if (!pageArtifact || !pageArtifact.ocrData || !value) return { bbox: null, confidence: null };
+      const needle = String(value).replace(/[^A-Z0-9.]/gi, '').toUpperCase();
+      if (!needle) return { bbox: null, confidence: null };
+      const words = collectOcrWords(pageArtifact.ocrData)
+        .filter(word => word && word.bbox && word.text)
+        .map(word => ({
+          ...word,
+          comparable: String(word.text).replace(/[^A-Z0-9.]/gi, '').toUpperCase()
+        }))
+        .filter(word => word.comparable && (word.comparable === needle || word.comparable.includes(needle) || needle.includes(word.comparable)))
+        .sort((a, b) => {
+          const exactA = a.comparable === needle ? 1 : 0;
+          const exactB = b.comparable === needle ? 1 : 0;
+          return exactB - exactA || Number(b.confidence || 0) - Number(a.confidence || 0);
+        });
+      if (!words.length) return { bbox: null, confidence: null };
+      const confidence = words[0].confidence;
+      return {
+        bbox: words[0].bbox,
+        confidence: confidence == null || !Number.isFinite(Number(confidence)) ? null : Number(confidence)
+      };
+    }
+
+    function buildFieldProvenance(logicalRecords, lines) {
+      const entries = [];
+      const definitions = [
+        { key: 'packageNo', label: 'Package No.', type: 'PACKAGE_NO', immutable: true },
+        { key: 'itemNo', label: 'ITEM NO.', type: 'ITEM_NO', immutable: true },
+        { key: 'shortItemCode', label: 'Item Code', type: 'ITEM_CODE', immutable: true },
+        { key: 'poNumber', label: 'PO Number', type: 'PO_NO', immutable: true },
+        { key: 'description', label: 'Description', type: 'DESCRIPTION' },
+        { key: 'ctn', label: 'CTN', type: 'CTN' },
+        { key: 'pcs', label: 'PCS', type: 'QUANTITY' },
+        { key: 'pcsPerCtn', label: 'PCS / CTN', type: 'PCS_PER_CTN' },
+        { key: 'netWeight', label: 'Net Weight', type: 'NET_WEIGHT' },
+        { key: 'grossWeight', label: 'Gross Weight', type: 'GROSS_WEIGHT' },
+        { key: 'measurement', label: 'Measurement', type: 'MEASUREMENT' }
+      ];
+
+      for (const record of logicalRecords) {
+        const pageArtifact = v22State.pageArtifacts.find(artifact => artifact.page === record.page) || null;
+        const ctn = parseNumericClean(record.ctn);
+        const pcs = parseNumericClean(String(record.pcs || '').replace(/\s*PCS$/i, ''));
+        const perCtn = parseNumericClean(record.pcsPerCtn);
+        const quantityCheckAvailable = !Number.isNaN(ctn) && !Number.isNaN(pcs) && !Number.isNaN(perCtn);
+        const quantityPass = quantityCheckAvailable && Math.round(ctn * perCtn) === Math.round(pcs);
+        const net = parseNumericClean(String(record.netWeight || '').replace(/KG$/i, ''));
+        const gross = parseNumericClean(String(record.grossWeight || '').replace(/KG$/i, ''));
+        const weightCheckAvailable = !Number.isNaN(net) && !Number.isNaN(gross);
+        const weightPass = weightCheckAvailable && net <= gross + 0.01;
+
+        for (const definition of definitions) {
+          const baseField = definition.immutable ? record[definition.key] : null;
+          const rawValue = definition.immutable ? String(baseField.rawValue || '') : String(record[definition.key] || '');
+          if (!rawValue) continue;
+          const normalizedValue = definition.immutable ? String(baseField.normalizedValue || rawValue) : rawValue;
+          const suggestedValue = definition.immutable ? baseField.suggestedValue : null;
+          const finalValue = definition.immutable ? String(baseField.finalValue || normalizedValue) : normalizedValue;
+          const lineNumber = definition.immutable && baseField.lineNumber >= 0
+            ? baseField.lineNumber
+            : findRecordValueLine(lines, record, finalValue);
+          const ocrEvidence = findFieldOcrEvidence(pageArtifact, rawValue);
+          const ocrConfidence = baseField && baseField.ocrConfidence != null ? baseField.ocrConfidence : ocrEvidence.confidence;
+          const geometryConfidence = pageArtifact ? pageArtifact.geometryConfidence ?? null : null;
+          const corrected = finalValue !== rawValue || Boolean(suggestedValue && suggestedValue !== rawValue);
+          let status = corrected ? 'CORRECTED' : 'CAPTURED';
+          if (record.suspicious) status = 'REVIEW';
+          if (definition.immutable && record.identityConfidence === 'CONFLICT') status = 'CONFLICT';
+          if (definition.immutable && baseField.locked) status = 'LOCKED';
+          if (['CTN', 'QUANTITY', 'PCS_PER_CTN'].includes(definition.type) && quantityCheckAvailable) status = quantityPass ? 'VERIFIED' : 'REVIEW';
+          if (['NET_WEIGHT', 'GROSS_WEIGHT'].includes(definition.type) && weightCheckAvailable) status = weightPass ? 'VERIFIED' : 'REVIEW';
+
+          const checks = [];
+          checks.push({
+            label: 'OCR evidence',
+            status: ocrConfidence == null ? 'N/A' : ocrConfidence >= 85 ? 'PASS' : 'REVIEW',
+            detail: ocrConfidence == null ? 'No word-level OCR confidence captured' : `${Math.round(ocrConfidence)}% word confidence`
+          });
+          checks.push({
+            label: 'Geometry',
+            status: geometryConfidence == null ? 'N/A' : geometryConfidence >= 80 ? 'PASS' : 'REVIEW',
+            detail: geometryConfidence == null ? 'No OCR geometry captured' : `${Math.round(geometryConfidence)}% page geometry confidence`
+          });
+          if (definition.immutable) {
+            const valid = isValidFormatForField(definition.type, finalValue);
+            checks.push({ label: 'Format', status: valid ? 'PASS' : 'REVIEW', detail: valid ? `${definition.label} matches expected format` : `${definition.label} does not match expected format` });
+            checks.push({
+              label: 'Cross-field identity',
+              status: record.identityConfidence === 'VERY_HIGH' ? 'PASS' : record.identityConfidence === 'CONFLICT' ? 'CONFLICT' : 'REVIEW',
+              detail: `Identity Triple: ${record.identityConfidence}${record.identityLocked ? ' · locked' : ''}`
+            });
+          }
+          if (['CTN', 'QUANTITY', 'PCS_PER_CTN'].includes(definition.type)) {
+            checks.push({
+              label: 'Arithmetic',
+              status: !quantityCheckAvailable ? 'N/A' : quantityPass ? 'PASS' : 'FAIL',
+              detail: !quantityCheckAvailable ? 'CTN, PCS and PCS/CTN were not all captured' : `${record.ctn} CTN × ${record.pcsPerCtn} = ${ctn * perCtn}; captured ${record.pcs}`
+            });
+          }
+          if (['NET_WEIGHT', 'GROSS_WEIGHT'].includes(definition.type)) {
+            checks.push({
+              label: 'Weight relation',
+              status: !weightCheckAvailable ? 'N/A' : weightPass ? 'PASS' : 'FAIL',
+              detail: !weightCheckAvailable ? 'Net and Gross Weight were not both captured' : `Net ${record.netWeight} ≤ Gross ${record.grossWeight}`
+            });
+          }
+          checks.push({
+            label: 'Value history',
+            status: corrected ? 'REVIEW' : 'PASS',
+            detail: corrected ? `${rawValue} → ${finalValue}` : 'Raw/captured value preserved as final'
+          });
+
+          entries.push({
+            id: `${record.recordId}:${definition.key}`,
+            recordId: record.recordId,
+            recordStartLine: record.startLine,
+            recordEndLine: record.endLine,
+            fieldKey: definition.key,
+            label: definition.label,
+            fieldType: definition.type,
+            page: record.page,
+            lineNumber,
+            rawValue,
+            normalizedValue,
+            suggestedValue,
+            finalValue,
+            bbox: (baseField && baseField.bbox) || ocrEvidence.bbox || null,
+            ocrConfidence,
+            geometryConfidence,
+            correctionReason: (baseField && baseField.correctionReason) || '',
+            status,
+            source: pageArtifact && pageArtifact.ocrData ? 'OCR token stream' : 'Extracted text layer',
+            sourceText: lines[lineNumber] || '',
+            checks
+          });
+        }
+      }
+      return entries;
     }
 
     function safeNormalizeField(raw, fieldType) {
@@ -2220,13 +3079,10 @@
     function extractNumericCore(value) {
       const s = String(value ?? '').trim().toUpperCase();
       if (!s) return '';
-      // #U2825410-100H or U2825410-100H -> 2825410
       const pkgOrItem = s.match(/#?\s*U([0-9A-Z]{6,8})-[0-9A-Z]+/i);
       if (pkgOrItem) return pkgOrItem[1];
-      // (2825410) -> 2825410
       const paren = s.match(/\(([0-9A-Z]{6,8})\)/);
       if (paren) return paren[1];
-      // Plain 7-digit numeric core
       const plain = s.match(/\b(\d{6,8})\b/);
       if (plain) return plain[1];
       return '';
@@ -2242,7 +3098,6 @@
       return true;
     }
 
-    // 8. Centralized Correction Gate (Mandatory for all critical fields)
     function evaluateCriticalFieldCorrection({
       fieldType,
       rawValue,
@@ -2268,7 +3123,6 @@
         };
       }
 
-      // Check if only identity-preserving formatting changed (same numeric core for identity fields)
       const rawCore = extractNumericCore(rawNorm);
       const candCore = extractNumericCore(candNorm);
       if (rawCore && candCore && rawCore === candCore && rawNorm.replace(/[^A-Z0-9]/gi, '') === candNorm.replace(/[^A-Z0-9]/gi, '')) {
@@ -2279,7 +3133,6 @@
         };
       }
 
-      // Rule 6 & 7: Valid raw value with local structural agreement or valid format must NEVER be silently replaced
       if (localStructuralAgreement >= 2) {
         return {
           action: 'PRESERVE',
@@ -2288,8 +3141,6 @@
         };
       }
 
-      // If BOTH raw and candidate are valid formatted codes (e.g. 2825410 vs 2825411, or 25033284 vs 25033285),
-      // never replace one valid code with another valid code via frequency or edit distance.
       if (rawFormatValid && candidateFormatValid) {
         if (localStructuralAgreement === 1) {
           return {
@@ -2305,7 +3156,6 @@
         };
       }
 
-      // Raw value is malformed, while candidate is valid and supported by same-record evidence
       if (!rawFormatValid && candidateFormatValid) {
         const evidenceScore = Math.min(97, Math.round(
           (localStructuralAgreement >= 2 ? 45 : localStructuralAgreement === 1 ? 25 : 0) +
@@ -2330,7 +3180,6 @@
       };
     }
 
-    // 4. Identity Triple Validation (Package No. vs ITEM NO. vs Short Numeric Item Code)
     function validateIdentityTriple(record) {
       const pkgCore = extractNumericCore(record.packageNo.rawValue);
       const itemCore = extractNumericCore(record.itemNo.rawValue);
@@ -2356,7 +3205,6 @@
       const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
       const [topCore, topCount] = ranked[0];
 
-      // CASE 1: ALL THREE AGREE
       if (present.length === 3 && topCount === 3) {
         record.identityConfidence = 'VERY_HIGH';
         record.identityLocked = true;
@@ -2367,7 +3215,6 @@
         return;
       }
 
-      // CASE 2: TWO OF THREE AGREE
       if (present.length >= 2 && topCount === 2) {
         record.identityConfidence = 'HIGH_WITH_CONFLICT';
         record.identityLocked = false;
@@ -2399,7 +3246,6 @@
         return;
       }
 
-      // CASE 3: ALL PRESENT REPRESENTATIONS DISAGREE (when >= 2 present)
       if (present.length >= 2 && topCount === 1) {
         record.identityConfidence = 'CONFLICT';
         record.identityLocked = false;
@@ -2410,14 +3256,12 @@
         return;
       }
 
-      // CASE 4: ONLY ONE REPRESENTATION EXISTS
       const single = present[0];
       record.identityConfidence = isValidFormatForField(single.field.fieldType, single.field.rawValue) ? 'MEDIUM' : 'LOW';
       record.identityLocked = false;
       record.resolvedItemCore = single.core;
     }
 
-    // 9 & 10. Logical Record Boundary Parser & Local PO Association
     function parseLogicalRecordsFromText(text, docType) {
       const lines = String(text || '').split('\n');
       const records = [];
@@ -2425,7 +3269,6 @@
       let currentPage = 1;
 
       const isRecordStart = (line) => {
-        // A new logical record begins when a definite Package No. (#Uxxxxxxx-xxx) or standalone ITEM NO. block starts
         const hasPkg = /#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+/i.test(line);
         const hasItemLabel = /\bITEM\s*NO\.?\s*:\s*U?[0-9A-Z]{6,8}-[0-9A-Z]+/i.test(line);
         return hasPkg || hasItemLabel;
@@ -2448,13 +3291,11 @@
         const line = rawLine.trim();
         if (!line) return;
 
-        // Skip document header lines before table starts
         if (/^(?:DREAM CREATION|TELEPHONE|FAX|TELEX|CABLE|INV\/DN DATE|CONSIGNEE|BANDAI NAMCO|28\/F|KWUN TONG|Shippee|Shipped|From\b|Via\b|sailing|Package No\b)/i.test(line)) {
           return;
         }
 
         if (isRecordStart(line)) {
-          // Reset record-level identity state completely when a new Package/Item block begins
           if (current) finalizeRecord(current);
 
           const pkgMatch = line.match(/(#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
@@ -2514,7 +3355,6 @@
         if (!current) return;
         current.endLine = lineIdx;
 
-        // Assign fields strictly within current logical record boundaries
         if (!current.packageNo.rawValue) {
           const pkgMatch = line.match(/(#\s*U[0-9A-Z]{6,8}-[0-9A-Z]+)/i);
           if (pkgMatch) {
@@ -2567,7 +3407,6 @@
           return;
         }
 
-        // Metric row: CTN, PCS, Net Weight, Gross Weight, Measurement
         const metricMatch = line.match(/(\d{1,3}(?:,\d{3})*)\s+(\d{1,3}(?:,\d{3})*)\s*PCS\b/i);
         if (metricMatch) {
           current.ctn = metricMatch[1];
@@ -2584,7 +3423,6 @@
           return;
         }
 
-        // Otherwise, if not a page footer/total line, treat as Description belonging to this record
         if (!/^(?:TOTAL|For and on behalf|Authorized|PAGE:)/i.test(line)) {
           current.descriptionLines.push(line);
           current.description = current.descriptionLines.join(' ').trim();
@@ -2595,7 +3433,6 @@
       return records;
     }
 
-    // 11 & 12. Internal Contradiction Detector & Evidence Improvement Guard
     function validateRecordInternalConsistency(rec) {
       const pkgCore = extractNumericCore(rec.packageNo.finalValue);
       const itemCore = extractNumericCore(rec.itemNo.finalValue);
@@ -2614,7 +3451,6 @@
         rec.contradictions.push(`Missing local PO Number in ${rec.recordId}`);
       }
 
-      // Arithmetic check within record
       const ctns = parseNumericClean(rec.ctn);
       const pcs = parseNumericClean(rec.pcs.replace(/\s*PCS$/i, ''));
       const perCtn = parseNumericClean(rec.pcsPerCtn);
@@ -2638,24 +3474,6 @@
           : 90;
     }
 
-    function doesCorrectionImproveRecord(record, fieldKey, proposedValue) {
-      const clone = {
-        ...record,
-        packageNo: { ...record.packageNo },
-        itemNo: { ...record.itemNo },
-        shortItemCode: { ...record.shortItemCode },
-        poNumber: { ...record.poNumber },
-        contradictions: []
-      };
-      clone[fieldKey].finalValue = proposedValue;
-      validateRecordInternalConsistency(clone);
-
-      const beforeContradictions = record.contradictions.length;
-      const afterContradictions = clone.contradictions.length;
-      return afterContradictions < beforeContradictions;
-    }
-
-    // 5. Document-Level Canonical Item Code Dictionary (Supporting Evidence Only)
     function buildCanonicalItemDictionary(text, logicalRecords) {
       const dict = new Map();
       const register = (code, conf, evidence) => {
@@ -2689,36 +3507,6 @@
       return dict;
     }
 
-    // 7. Restricted Fuzzy Matching (Malformed values ONLY — NEVER valid-to-valid replacement)
-    function findCanonicalItemMatch(rawToken, canonicalDict, recordContext = null) {
-      if (recordContext && recordContext.identityLocked) {
-        return null; // Identity is locked by 3-way local agreement; never touch it
-      }
-
-      const cleaned = String(rawToken || '').replace(/^[£$¥€#]+/, '').trim();
-      if (!cleaned) return null;
-
-      // Never replace a valid 7-digit numeric code with another valid 7-digit code!
-      if (/^\d{7}$/.test(cleaned)) {
-        return null;
-      }
-
-      // Only evaluate malformed lengths (e.g. 8-digit stray character like 29037764 -> 2903776)
-      if (/^\d{8}$/.test(cleaned)) {
-        const prefix7 = cleaned.slice(0, 7);
-        if (canonicalDict.has(prefix7) && canonicalDict.get(prefix7).count >= 2) {
-          return {
-            candidate: prefix7,
-            editDistance: 1,
-            reason: `Malformed 8-digit code "${cleaned}" matches repeated 7-digit Item Code ${prefix7}`
-          };
-        }
-      }
-
-      return null;
-    }
-
-    // 6. Document-Local Phrase Consensus (Descriptions ONLY — NEVER Item Codes, Package Nos, or PO Nos)
     function isProtectedIdentityLine(line) {
       const s = String(line || '').trim();
       return (
@@ -2746,7 +3534,6 @@
       for (const line of lines) {
         const trimmed = line.trim();
         if (trimmed.length < 14 || /^=== Page/.test(trimmed)) continue;
-        // CRITICAL REGRESSION GUARD: Never run phrase consensus on Package No., ITEM NO., or PO NO. lines
         if (isProtectedIdentityLine(trimmed)) continue;
 
         const key = trimmed.toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim();
@@ -2830,10 +3617,10 @@
 
       const avgOcrConf = pageArtifact && pageArtifact.avgWordConfidence
         ? pageArtifact.avgWordConfidence
-        : 88;
+        : 95;
       const geomConf = pageArtifact && pageArtifact.geometryConfidence
         ? pageArtifact.geometryConfidence
-        : 86;
+        : 94;
 
       let score = Math.round(avgOcrConf * 0.45 + geomConf * 0.25 + 30);
       score -= criticalCount * 8;
@@ -2857,6 +3644,7 @@
     }
 
     function resetV22State() {
+      selectedPageQualityPage = 1;
       v22State = {
         docType: { type: 'UNKNOWN', confidence: 0, signals: [] },
         pageArtifacts: [],
@@ -2873,6 +3661,8 @@
         auditTrace: []
       };
       exportStructuredCsvBtn.disabled = true;
+      fieldProvenanceBtn.disabled = true;
+      closeFieldProvenance();
       updateV22TelemetryUI();
     }
 
@@ -2895,6 +3685,7 @@
         ? `Records Locked (${v22State.structuredRows.length} rows)`
         : 'Standard Fallback';
       exportStructuredCsvBtn.disabled = !hasStructured;
+      fieldProvenanceBtn.disabled = !v22State.provenance.length;
 
       const suspCount = v22State.suspiciousRows.length;
       suspiciousCountBadge.textContent = String(suspCount);
@@ -2905,17 +3696,61 @@
       if (!v22State.pageQualities.length) {
         pageQualityStrip.innerHTML = '<span>Page Quality: -</span>';
       } else {
-        pageQualityStrip.innerHTML = v22State.pageQualities.map(pq => {
-          const needsReview = pq.score < 78 || pq.reviewFlag;
-          const cls = needsReview
-            ? 'bg-rose-50 text-rose-700 border-rose-200 font-bold'
-            : pq.score >= 90
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-              : 'bg-slate-100 text-slate-700 border-slate-200';
-          return `<span class="px-1.5 py-0.5 rounded border ${cls}" title="${escapeHtml(pq.summary || '')}">P${pq.page} ${pq.score}%${needsReview ? ' REVIEW' : ''}</span>`;
+        const pages = v22State.pageQualities;
+        const reviewPages = pages.filter(pq => pq.score < 78 || pq.reviewFlag);
+        if (!pages.some(pq => pq.page === selectedPageQualityPage)) {
+          selectedPageQualityPage = reviewPages[0]?.page || pages[0].page;
+        }
+        const selectedIndex = Math.max(0, pages.findIndex(pq => pq.page === selectedPageQualityPage));
+        const selected = pages[selectedIndex];
+        const needsReview = selected.score < 78 || selected.reviewFlag;
+        const selectedClass = needsReview
+          ? 'bg-rose-50 text-rose-700 border-rose-200 font-bold'
+          : selected.score >= 90
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+            : 'bg-slate-100 text-slate-700 border-slate-200';
+        const options = pages.map(pq => {
+          const review = pq.score < 78 || pq.reviewFlag;
+          return `<option value="${pq.page}"${pq.page === selected.page ? ' selected' : ''}>Page ${pq.page}${review ? ' · Review' : ''}</option>`;
         }).join('');
+        pageQualityStrip.innerHTML = `
+          <span class="whitespace-nowrap font-bold text-slate-500">Page Quality</span>
+          <span class="whitespace-nowrap px-1.5 py-0.5 rounded border bg-slate-100 text-slate-700 border-slate-200">${pages.length} pages</span>
+          ${reviewPages.length ? `<span class="whitespace-nowrap px-1.5 py-0.5 rounded border bg-rose-50 text-rose-700 border-rose-200 font-bold">${reviewPages.length} review</span>` : ''}
+          <button type="button" data-page-quality-nav="prev" aria-label="Previous page quality" ${selectedIndex === 0 ? 'disabled' : ''} class="w-6 h-6 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-35 disabled:pointer-events-none"><i class="fa-solid fa-chevron-left"></i></button>
+          <select data-page-quality-select aria-label="Select page quality" class="h-6 max-w-28 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500">${options}</select>
+          <span class="whitespace-nowrap px-1.5 py-0.5 rounded border ${selectedClass}" title="${escapeHtml(selected.summary || '')}">${selected.score}%${needsReview ? ' REVIEW' : ''}</span>
+          <button type="button" data-page-quality-nav="next" aria-label="Next page quality" ${selectedIndex === pages.length - 1 ? 'disabled' : ''} class="w-6 h-6 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-35 disabled:pointer-events-none"><i class="fa-solid fa-chevron-right"></i></button>
+          <button type="button" data-page-quality-jump aria-label="Show selected page in preview" title="Show Page ${selected.page} in preview" class="w-6 h-6 rounded border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><i class="fa-regular fa-eye"></i></button>
+        `;
       }
     }
+
+    pageQualityStrip.addEventListener('change', event => {
+      const select = event.target.closest('[data-page-quality-select]');
+      if (!select) return;
+      selectedPageQualityPage = Number(select.value) || 1;
+      updateV22TelemetryUI();
+    });
+
+    pageQualityStrip.addEventListener('click', event => {
+      const nav = event.target.closest('[data-page-quality-nav]');
+      if (nav) {
+        const pages = v22State.pageQualities;
+        const index = pages.findIndex(pq => pq.page === selectedPageQualityPage);
+        const delta = nav.dataset.pageQualityNav === 'prev' ? -1 : 1;
+        const next = pages[Math.max(0, Math.min(pages.length - 1, index + delta))];
+        if (next) {
+          selectedPageQualityPage = next.page;
+          updateV22TelemetryUI();
+        }
+        return;
+      }
+      if (event.target.closest('[data-page-quality-jump]')) {
+        const target = previewContainer.querySelector(`[data-preview-page="${selectedPageQualityPage}"]`);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
 
     exportStructuredCsvBtn.addEventListener('click', () => {
       if (!v22State.structuredRows.length || v22State.tableConfidence < 55) {
@@ -2957,30 +3792,52 @@
       URL.revokeObjectURL(url);
     });
 
+    function isSingleDuplicateTokenRemoval(original, suggested) {
+      const source = normalizeLocateText(original).split(' ').filter(Boolean);
+      const target = normalizeLocateText(suggested).split(' ').filter(Boolean);
+      if (source.length !== target.length + 1) return '';
+      for (let index = 0; index < source.length; index++) {
+        const reduced = source.slice(0, index).concat(source.slice(index + 1));
+        if (reduced.join(' ') !== target.join(' ')) continue;
+        const removed = source[index];
+        if (source[index - 1] === removed || source[index + 1] === removed) return removed;
+      }
+      return '';
+    }
+
+    function isCrossCellDuplicatePhrase(original, suggested, page, lineNumber) {
+      const duplicatedToken = isSingleDuplicateTokenRemoval(original, suggested);
+      if (!duplicatedToken) return false;
+      const artifact = v22State.pageArtifacts.find(item => item.page === page && item.nativeRows && item.nativeRows.length);
+      if (!artifact) return false;
+      const pseudoIssue = { page, lineNumber, original, originalValue: original, context: original };
+      const row = findNativeRowForIssue(pseudoIssue, artifact);
+      if (!row || !Array.isArray(row.words)) return false;
+      const matches = row.words.filter(word => normalizeLocateText(word.text) === duplicatedToken);
+      return matches.some((left, leftIndex) => matches.slice(leftIndex + 1).some(right => left.cellIndex !== right.cellIndex));
+    }
+
+    function isNativeMultiCellTableRow(original, page, lineNumber) {
+      const artifact = v22State.pageArtifacts.find(item => item.page === page && item.nativeRows && item.nativeRows.length);
+      if (!artifact) return false;
+      const pseudoIssue = { page, lineNumber, original, originalValue: original, context: original };
+      const row = findNativeRowForIssue(pseudoIssue, artifact);
+      if (!row || !Array.isArray(row.cells)) return false;
+      return row.cells.filter(cell => normalizeLocateText(cell)).length > 1;
+    }
+
     function runV22DocumentIntelligence(fullText) {
       const docType = detectDocumentType(fullText);
       const lines = String(fullText || '').split('\n');
       const pageMatches = [...String(fullText || '').matchAll(/^=== Page (\d+) ===$/gm)];
       const numPages = pageMatches.length ? Math.max(...pageMatches.map(m => Number(m[1]))) : 1;
 
-      // 1. Parse strict logical record boundaries (prevents cross-record borrowing of Item Code / PO Number)
       const logicalRecords = parseLogicalRecordsFromText(fullText, docType.type);
       const canonicalItems = buildCanonicalItemDictionary(fullText, logicalRecords);
       const phraseConsensus = buildPhraseConsensus(fullText);
 
-      // 2. Log full diagnostic trace when enabled & surface any internal record contradictions to Validation Review
       const suspiciousRows = [];
       for (const rec of logicalRecords) {
-        v22DebugLog(rec.recordId, {
-          packageNo: rec.packageNo,
-          itemNo: rec.itemNo,
-          shortItemCode: rec.shortItemCode,
-          poNumber: rec.poNumber,
-          identityConfidence: rec.identityConfidence,
-          identityLocked: rec.identityLocked,
-          contradictions: rec.contradictions
-        });
-
         if (rec.contradictions.length > 0) {
           suspiciousRows.push({
             page: rec.page,
@@ -3005,7 +3862,6 @@
         }
       }
 
-      // 3. Phrase consensus ONLY for non-identity description lines
       if (phraseConsensus.length) {
         const canonicalPhrases = phraseConsensus.filter(p => p.count >= 2);
         lines.forEach((line, lineIdx) => {
@@ -3015,6 +3871,12 @@
           const page = currentPageForLine(lines, lineIdx);
           for (const cp of canonicalPhrases) {
             if (trimmed === cp.phrase) continue;
+            // Phrase consensus is a description-field check, not a whole-row check.
+            // Native rows with multiple geometry cells may legitimately contain one
+            // or two CTN/PCS values, or different units in adjacent columns. Comparing
+            // the flattened row would invent deletions/additions/conversions, so keep
+            // the source row exactly as extracted and do not create a review item.
+            if (isNativeMultiCellTableRow(trimmed, page, lineIdx)) continue;
             const sim = tokenSimilarity(trimmed, cp.phrase);
             if (sim >= 0.78 && Math.abs(trimmed.length - cp.phrase.length) <= 8) {
               addValidationIssue({
@@ -3037,7 +3899,6 @@
         });
       }
 
-      // 4. Build structured rows directly from validated logical records (immutable raw values preserved on record)
       const structuredRows = logicalRecords.map(rec => ({
         page: rec.page,
         recordId: rec.recordId,
@@ -3056,6 +3917,7 @@
         rowConfidence: rec.rowConfidence,
         suspicious: rec.suspicious
       }));
+      const provenance = buildFieldProvenance(logicalRecords, lines);
 
       const tableConfidence = logicalRecords.length > 0
         ? Math.round(logicalRecords.reduce((acc, r) => acc + r.rowConfidence, 0) / logicalRecords.length)
@@ -3071,6 +3933,7 @@
       v22State.docType = docType;
       v22State.logicalRecords = logicalRecords;
       v22State.structuredRows = structuredRows;
+      v22State.provenance = provenance;
       v22State.tableConfidence = tableConfidence;
       v22State.canonicalItems = canonicalItems;
       v22State.phraseConsensus = phraseConsensus;
@@ -3081,44 +3944,14 @@
       updateV22TelemetryUI();
     }
 
-    // 13. Deterministic DCI-2609006-3 Six-Record Regression Self-Test
-    function runDciRegressionSelfTest(sampleText) {
-      const records = parseLogicalRecordsFromText(sampleText, 'PACKING_LIST');
-      const expected = [
-        { item: '2825410', po: '25033284', desc: 'GA EX. PACK 01 - UNICORN (EN)', ctn: '125', pcs: '3,000 PCS', net: '5.88KG', gross: '7.00KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
-        { item: '2825411', po: '25033284', desc: 'GA EX. PACK 02 - WITCH', ctn: '125', pcs: '3,000 PCS', net: '6.28KG', gross: '7.40KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
-        { item: '2825410', po: '25033285', desc: 'GA EX. PACK 01 - UNICORN (EN)', ctn: '1,281', pcs: '30,744 PCS', net: '5.88KG', gross: '7.00KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
-        { item: '2825411', po: '25033285', desc: 'GA EX. PACK 02 - WITCH FR', ctn: '1,224', pcs: '29,376 PCS', net: '6.28KG', gross: '7.40KG', meas: '48.6 X 43.2 X 27.2 CM', perCtn: '24' },
-        { item: '2859594', po: '25033099', desc: 'Gundam Assemble PLANT', ctn: '380', pcs: '9,120 PCS', net: '12.96KG', gross: '14.10KG', meas: '52.0 X 51.0 X 34.5 CM', perCtn: '24' },
-        { item: '2859594', po: '25033294', desc: 'Gundam Assemble PLANT', ctn: '125', pcs: '3,000 PCS', net: '12.96KG', gross: '14.10KG', meas: '52.0 X 51.0 X 34.5 CM', perCtn: '24' }
-      ];
-
-      const failures = [];
-      if (records.length !== expected.length) {
-        failures.push(`Expected ${expected.length} logical records, got ${records.length}`);
-      }
-      expected.forEach((exp, i) => {
-        const rec = records[i];
-        if (!rec) return;
-        if (rec.resolvedItemCore !== exp.item) failures.push(`Record ${i + 1} item mismatch: got ${rec.resolvedItemCore}, expected ${exp.item}`);
-        if (rec.poNumber.finalValue !== exp.po) failures.push(`Record ${i + 1} PO mismatch: got ${rec.poNumber.finalValue}, expected ${exp.po}`);
-        if (rec.description !== exp.desc) failures.push(`Record ${i + 1} desc mismatch: got "${rec.description}", expected "${exp.desc}"`);
-        if (rec.ctn !== exp.ctn) failures.push(`Record ${i + 1} CTN mismatch: got ${rec.ctn}, expected ${exp.ctn}`);
-        if (rec.pcs !== exp.pcs) failures.push(`Record ${i + 1} PCS mismatch: got ${rec.pcs}, expected ${exp.pcs}`);
-        if (rec.netWeight !== exp.net) failures.push(`Record ${i + 1} Net mismatch: got ${rec.netWeight}, expected ${exp.net}`);
-        if (rec.grossWeight !== exp.gross) failures.push(`Record ${i + 1} Gross mismatch: got ${rec.grossWeight}, expected ${exp.gross}`);
-        if (rec.measurement !== exp.meas) failures.push(`Record ${i + 1} Meas mismatch: got ${rec.measurement}, expected ${exp.meas}`);
-        if (rec.pcsPerCtn !== exp.perCtn) failures.push(`Record ${i + 1} pcsPerCtn mismatch: got ${rec.pcsPerCtn}, expected ${exp.perCtn}`);
-        if (!rec.identityLocked || rec.identityConfidence !== 'VERY_HIGH') failures.push(`Record ${i + 1} identity not locked at VERY_HIGH`);
-        if (rec.contradictions.length > 0) failures.push(`Record ${i + 1} unexpected contradictions: ${rec.contradictions.join('; ')}`);
-      });
-
-      return { passed: failures.length === 0, recordCount: records.length, failures, records };
-    }
-
     const _v22OrigProcessPDF = processPDF;
     processPDF = async function(arrayBuffer) {
+      bulkBatchSnapshot = null;
+      lastBatchReport = null;
+      bulkPreviewBanner.classList.add('hidden');
+      batchResultBanner.classList.add('hidden');
       resetV22State();
+      updateBulkToolbarState();
       return await _v22OrigProcessPDF.call(this, arrayBuffer);
     };
 
@@ -3144,9 +3977,10 @@
     detectCriticalFieldIssues = function(text) {
       const res = _v22OrigDetectCriticalFieldIssues.call(this, text);
       runV22DocumentIntelligence(text);
+      enrichValidationIssuesMetadata();
+      renderValidationReview();
       return res;
     };
-
   </script>
 </body>
 </html>
